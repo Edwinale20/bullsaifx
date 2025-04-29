@@ -9,10 +9,37 @@ import plotly.io as pio
 import subprocess
 
 
-xlsx_file = 'https://api.github.com/repos/Edwinale20/bullsaifx/contents/Coberturas'
+@st.cache_data(ttl=3600)
+def list_files_in_github_folder(folder_url):
+    response = requests.get(folder_url)
+    response.raise_for_status()
+    files_info = response.json()
+    raw_urls = [file_info['download_url'] for file_info in files_info if file_info['type'] == 'file']
+    return raw_urls
 
-# 1. Primero, para leer la carpeta Coberturas
-file_urls = list_files_in_github_folder(xlsx_file)  # Usas tu función que ya hiciste
+@st.cache_data(ttl=3600)
+def download_file_from_github(url):
+    response = requests.get(url)
+    response.raise_for_status()
+    return BytesIO(response.content)
+
+@st.cache_data
+def master(excel):
+    df = pd.read_excel(excel)
+    df['ARTICULO'] = df['ARTICULO'].astype('str')
+    df = df.drop(columns=['UPC', 'SABOR'], errors='ignore')
+    return df
+# ================================
+
+# ================================
+# DESPUÉS defines tus URLs
+xlsx_file = 'https://api.github.com/repos/Edwinale20/bullsaifx/contents/Coberturas'
+excel = 'https://raw.githubusercontent.com/Edwinale20/bullsaifx/main/MASTER.xlsx'
+
+# ================================
+# AHORA ya puedes usar tus funciones
+
+file_urls = list_files_in_github_folder(xlsx_file)
 
 VENTA = pd.DataFrame()
 
@@ -21,8 +48,7 @@ for url in file_urls:
     df = pd.read_excel(file_content)
     VENTA = pd.concat([VENTA, df], ignore_index=True)
 
-# 2. Para leer el MASTER
-MASTER = pd.read_excel(excel)
+MASTER = master(excel)
 
 
 st.set_page_config(page_title="Coberturas Cigarros y RRPS", page_icon="🚦", layout="wide", initial_sidebar_state="expanded")
