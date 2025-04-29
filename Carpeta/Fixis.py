@@ -136,6 +136,7 @@ MAESTRO = merge_data()
 #--------------------------------------------------------------------------------------------------------------
 
 st.sidebar.title("Filtros 🔠")
+st.sidebar.image("https://raw.githubusercontent.com/Edwinale20/Sdkiap/main/folder/el-logo.png", width=170)
 
 
 # Paso 1: Crear una lista de opciones para el filtro, incluyendo "Ninguno"
