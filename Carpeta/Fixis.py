@@ -62,7 +62,7 @@ def venta(venta_semanal):
     concat_venta = concat_venta.rename(columns={
         'Artículo': 'Desc',
         'Unnamed: 7': 'ARTICULO',
-    })
+    }) 
 
     return concat_venta
 #--------------------------------------------------------------------------------------------------------------
