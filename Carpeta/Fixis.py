@@ -49,10 +49,6 @@ excel = 'https://raw.githubusercontent.com/Edwinale20/bullsaifx/main/MASTER.xlsx
 file_urls = list_files_in_github_folder(xlsx_file)
 
 
-for url in file_urls:
-    file_content = download_file_from_github(url)
-    df = pd.read_excel(file_content)
-    VENTA = pd.concat([VENTA, df], ignore_index=True)
 
 MASTER = master(excel)
 
@@ -106,6 +102,9 @@ def venta(venta_semanal):
     }) 
 
     return concat_venta
+
+VENTA = venta(file_urls)
+
 #--------------------------------------------------------------------------------------------------------------
 
 @st.cache_data
