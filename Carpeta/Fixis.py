@@ -48,7 +48,6 @@ excel = 'https://raw.githubusercontent.com/Edwinale20/bullsaifx/main/MASTER.xlsx
 
 file_urls = list_files_in_github_folder(xlsx_file)
 
-VENTA = pd.DataFrame()
 
 for url in file_urls:
     file_content = download_file_from_github(url)
@@ -117,9 +116,8 @@ def master(excel):
     return df
 #--------------------------------------------------------------------------------------------------------------
 
-excel = 'https://raw.githubusercontent.com/Edwinale20/bullsaifx/main/MASTER.xlsx'
-MASTER = master(excel)
-VENTA = venta(xlsx_file)
+#excel = 'https://raw.githubusercontent.com/Edwinale20/bullsaifx/main/MASTER.xlsx'
+#MASTER = master(excel)
 #--------------------------------------------------------------------------------------------------------------
 
 # 🗂️ Función para unir los DataFrames correctamente
