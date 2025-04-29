@@ -8,6 +8,7 @@ import plotly.graph_objects as go
 import plotly.io as pio
 import subprocess
 import requests
+from io import BytesIO
 
 
 
