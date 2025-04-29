@@ -95,7 +95,6 @@ def venta(venta_semanal):
     
     # Eliminar columnas específicas no deseadas
     concat_venta = concat_venta.drop(columns=['Metrics'], errors='ignore')
-    concat_venta['Semana Transacción'] = concat_venta['Semana Transacción'].astype(str)
     concat_venta['Unidades Inventario'] = concat_venta['Unidades Inventario'].astype(str)
     concat_venta['Mercado'] = concat_venta['Mercado'].astype('str')
     concat_venta['Unidades Inventario'] = concat_venta['Unidades Inventario'].str.replace('(', '-', regex=False)
