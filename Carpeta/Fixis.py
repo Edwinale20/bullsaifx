@@ -9,6 +9,7 @@ import plotly.io as pio
 import subprocess
 
 
+xlsx_file = 'https://api.github.com/repos/Edwinale20/bullsaifx/contents/Coberturas'
 
 # 1. Primero, para leer la carpeta Coberturas
 file_urls = list_files_in_github_folder(xlsx_file)  # Usas tu función que ya hiciste
@@ -22,7 +23,6 @@ for url in file_urls:
 
 # 2. Para leer el MASTER
 MASTER = pd.read_excel(excel)
-xlsx_file = 'https://api.github.com/repos/Edwinale20/bullsaifx/contents/Coberturas'
 
 
 st.set_page_config(page_title="Coberturas Cigarros y RRPS", page_icon="🚦", layout="wide", initial_sidebar_state="expanded")
