@@ -14,7 +14,7 @@ from io import BytesIO
 st.set_page_config(page_title="Coberturas Cigarros y RRPS", page_icon="🚦", layout="wide", initial_sidebar_state="expanded")
 st.title("🚦 Coberturas Cigarros y RRPS 🚬")
 st.markdown("🆕 Se incluyen datos de la semana anterior.", unsafe_allow_html=True)
-st.markdown("🆕 Tomamos en cuenta para qu un artículo tenga cobertura, un mínimo de 3 unidades en inventario.", unsafe_allow_html=True)
+st.markdown("🆕 Para determinar que un artículo tiene cobertura, tomamos en cuenta que tenga un mínimo de 3 unidades en inventario.", unsafe_allow_html=True)
 
 @st.cache_data(ttl=3600)
 def list_files_in_github_folder(folder_url):
