@@ -213,8 +213,7 @@ def calcular_cobertura_tabla(df):
         Total_Registros=('Cobertura', 'count'),
         Cobertura_Suma=('Cobertura', 'sum')
         title="Cobertura Promedio por Mercado"
-
-    ).reset_index()
+        ).reset_index()
 
     # Calcular porcentaje
     tabla_cobertura['Cobertura %'] = (tabla_cobertura['Cobertura_Suma'] / tabla_cobertura['Total_Registros']) * 100
