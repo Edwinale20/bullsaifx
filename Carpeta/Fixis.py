@@ -233,6 +233,7 @@ def calcular_cobertura_tabla(df):
             return 'background-color: red; color: white; text-align: center'
 
     styled = pivot.style.format("{:.0f}%").applymap(color_format)
+    title="Cobertura Promedio por Mercado"
 
     return styled
 
