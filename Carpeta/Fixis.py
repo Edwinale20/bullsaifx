@@ -275,7 +275,7 @@ def grafico_cobertura_mercado(df):
 # Divisor y encabezado
 
 st.divider()
-st.subheader(':orange[Comparación de Ventas por Semana y Categoria]')
+st.subheader(':orange[Revisión de coberturas por plaza y mercado]')
 
 figura1 = calcular_cobertura_tabla(df_venta_filtrada)
 figura_mercado = grafico_cobertura_mercado(df_venta_filtrada)
