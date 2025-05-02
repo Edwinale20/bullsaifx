@@ -212,6 +212,8 @@ def calcular_cobertura_tabla(df):
     tabla_cobertura = df.groupby(['Artículo', 'Plaza']).agg(
         Total_Registros=('Cobertura', 'count'),
         Cobertura_Suma=('Cobertura', 'sum')
+        title="Cobertura Promedio por Mercado"
+
     ).reset_index()
 
     # Calcular porcentaje
@@ -233,7 +235,6 @@ def calcular_cobertura_tabla(df):
             return 'background-color: red; color: white; text-align: center'
 
     styled = pivot.style.format("{:.0f}%").applymap(color_format)
-    title="Cobertura Promedio por Mercado"
 
     return styled
 
