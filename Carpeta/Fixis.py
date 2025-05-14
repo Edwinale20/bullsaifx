@@ -104,7 +104,6 @@ def venta(venta_semanal):
     return concat_venta
 
 
-@st.cache_data
 VENTA = venta(file_urls)
 
 #--------------------------------------------------------------------------------------------------------------
