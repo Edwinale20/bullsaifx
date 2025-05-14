@@ -201,7 +201,6 @@ df_venta_filtrada = df_venta_filtrada[
 #st.write(df_venta_filtrada)	
 
 #--------------------------------------------------------------------------------------------------------------
-@st.cache_data
 def calcular_cobertura_tabla(df):
     """
     Calcula la cobertura y devuelve una tabla tipo Excel estilizada.
@@ -238,7 +237,6 @@ def calcular_cobertura_tabla(df):
 
     return styled
 
-@st.cache_data
 def grafico_cobertura_mercado(df):
     """
     Gráfica de barras: % cobertura por mercado.
