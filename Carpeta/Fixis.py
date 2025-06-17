@@ -187,7 +187,7 @@ def calcular_cobertura_tabla(df):
     """
 
     # Crear columna de cobertura
-    df['Cobertura'] = df['Unidades Inventario'].apply(lambda x: 1 if float(x) > 3 else 0)
+    df['Cobertura'] = (df['Unidades Inventario'] > 3).astype(int)
 
     # Agrupar por Artículo y Plaza
     tabla_cobertura = df.groupby(['Artículo', 'Plaza']).agg(
