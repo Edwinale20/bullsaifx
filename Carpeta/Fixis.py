@@ -36,10 +36,8 @@ def master(excel):
     df['ARTICULO'] = df['ARTICULO'].astype('str')
     df = df.drop(columns=['UPC', 'SABOR'], errors='ignore')
     return df
-# ================================
 
-# ================================
-# DESPUÉS defines tus URLs
+
 xlsx_file = 'https://api.github.com/repos/Edwinale20/bullsaifx/contents/Coberturas'
 excel = 'https://raw.githubusercontent.com/Edwinale20/bullsaifx/main/MASTER.xlsx'
 
@@ -47,9 +45,6 @@ excel = 'https://raw.githubusercontent.com/Edwinale20/bullsaifx/main/MASTER.xlsx
 # AHORA ya puedes usar tus funciones
 
 file_urls = list_files_in_github_folder(xlsx_file)
-
-
-
 MASTER = master(excel)
 
 
@@ -106,33 +101,18 @@ def venta(venta_semanal):
 
 VENTA = venta(file_urls)
 
-#--------------------------------------------------------------------------------------------------------------
 
-@st.cache_data
-def master(excel):
-    df = pd.read_excel(excel)
-    df['ARTICULO'] = df['ARTICULO'].astype('str')
-    df = df.drop(columns=['UPC', 'SABOR'], errors='ignore')
-    return df
-#--------------------------------------------------------------------------------------------------------------
-
-#excel = 'https://raw.githubusercontent.com/Edwinale20/bullsaifx/main/MASTER.xlsx'
-#MASTER = master(excel)
 #--------------------------------------------------------------------------------------------------------------
 
 # 🗂️ Función para unir los DataFrames correctamente
 @st.cache_data
-def merge_data():
+def merge_data(VENTA, MASTER):
     if 'ARTICULO' in VENTA.columns and 'ARTICULO' in MASTER.columns:
         return VENTA.merge(MASTER, on='ARTICULO', how='left')
     else:
-        print("⚠️ No se encontró la columna 'ARTICULO' en ambos DataFrames. Se usará VENTA solo.")
         return VENTA
 
-MAESTRO = merge_data()
-
-
-
+MAESTRO = merge_data(VENTA, MASTER)
 
 #--------------------------------------------------------------------------------------------------------------
 
