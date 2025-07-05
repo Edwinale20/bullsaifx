@@ -10,7 +10,7 @@ import subprocess
 import requests
 from io import BytesIO
   
-
+ 
 st.set_page_config(page_title="Coberturas Cigarros y RRPS", page_icon="🚦", layout="wide", initial_sidebar_state="expanded")
 st.title("🚦 Coberturas Cigarros y RRPS 🚬")
 st.markdown("🆕 Se incluyen datos de la semana anterior.", unsafe_allow_html=True)
