@@ -293,21 +293,27 @@ def top_uptd_baja_cobertura(df, totales_por_plaza: dict, umbral_inv: int = 3, co
 
 
 TOTALES_PLAZA = {
-        "Coahuila (Saltillo)":85,"Coahuila (Torreón)":54,"Morelos":12,"México":390,
-        "Nuevo León":751,"Puebla":22,"Quintana Roo":79,"Tamaulipas (Matamoros)":59,
-        "Tamaulipas (Reynosa)":168,"Baja California (Tijuana)":86,"Baja California (Mexicali)":61,
-        "Baja California (Ensenada)":24,"Jalisco":181,"Yucatán":54,"Sonora (Hermosillo)":21,
-    }
-# df_venta_perdida_filtrada = ...  # tu DataFrame filtrado
+    "Coahuila (Saltillo)":85, "Coahuila (Torreón)":54, "Morelos":12, "México":390,
+    "Nuevo León":751, "Puebla":22, "Quintana Roo":79, "Tamaulipas (Matamoros)":59,
+    "Tamaulipas (Reynosa)":168, "Baja California (Tijuana)":86, "Baja California (Mexicali)":61,
+    "Baja California (Ensenada)":24, "Jalisco":181, "Yucatán":54, "Sonora (Hermosillo)":21,
+}
 
+
+
+kpi_top = st.container()
+
+# KPI 1 y 2
 k1, k2 = kpis_basicos(df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3)
+# KPI 3
 name, uptd, covp = top_uptd_baja_cobertura(df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3, cov_thresh=85)
 
-c6, c7, c8 = st.columns([4,3,4])
-with c6:
-    st.metric("Artículos con UPTD > 0", f"{k1}")
-with c7:
-    st.metric("UPTD > 10 con 0% cobertura", f"{k2}")
-with c8:
-    delta_txt = f"UPTD {uptd:.2f} • Cobertura {covp:.0f}%" if pd.notna(uptd) else "—"
-    st.metric("Mayor UPTD con baja cobertura", name, delta=delta_txt)
+with kpi_top:
+    c6, c7, c8 = st.columns([4, 3, 4])
+    with c6:
+        st.metric("Artículos con UPTD > 0", f"{k1}")
+    with c7:
+        st.metric("UPTD > 10 con 0% cobertura", f"{k2}")
+    with c8:
+        delta_txt = f"UPTD {uptd:.2f} • Cobertura {covp:.0f}%" if pd.notna(uptd) else "—"
+        st.metric("Mayor UPTD con baja cobertura", name, delta=delta_txt)
