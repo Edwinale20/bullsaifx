@@ -366,8 +366,16 @@ TOTALES_PLAZA = {
 
 # KPI 1 y 2
 k1, k2 = kpis_basicos(df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3)
-# KPI 3
-name, uptd, covp = top_uptd_baja_cobertura(df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3, cov_thresh=85)
+
+# KPI 3 (mayor UPTD con baja cobertura)
+name, uptd, covp = top_uptd_baja_cobertura(
+    df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3, cov_thresh=85
+)
+
+# KPI 4 (UPTD > 5 y Cobertura > 85%)
+k3, lista_k3 = kpis_altos(
+    df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3, cov_thresh=85
+)
 
 with kpi_top:
     c6, c7, c8 = st.columns([4, 3, 4])
