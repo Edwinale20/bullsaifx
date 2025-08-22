@@ -34,7 +34,7 @@ with zipfile.ZipFile(io.BytesIO(archivo_zip.getvalue())) as z:
         st.error("El ZIP no contiene CSV.")
         st.stop()
     with z.open(csvs[0]) as f:
-        df = pd.read_csv(encoding='ISO-8859-1')
+        df = pd.read_csv(f, encoding="ISO-8859-1")
 
 st.success(f"CSV leído: {csvs[0]}")
 st.write("Columnas disponibles:", list(df.columns))
