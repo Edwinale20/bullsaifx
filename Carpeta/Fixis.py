@@ -312,22 +312,36 @@ def cobertura_por_articulo(df, totales_por_plaza: dict, umbral_inv: int = 3):
     return art  # columnas: [ARTICULO, Tiendas_con_art, Tiendas_totales, Cobertura_%]
 
 # === 2) KPIs rápidos: (UPTD>0) y (UPTD>10 & cobertura=0) =====================
-def kpis_basicos(df, totales_por_plaza: dict, umbral_inv: int = 3):
+def kpis_avanzados(df, totales_por_plaza: dict, umbral_inv: int = 3):
+    """
+    Devuelve:
+      - Número de artículos con UPTD > 5 y Cobertura > 85%
+      - Lista con los nombres de esos artículos
+    """
+    # --- Identificar columnas ---
     pick = lambda names: next((c for c in names if c in df.columns), None)
     ART = pick(["ARTICULO","Artículo","Articulo"])
     UPT = pick(["UPTD","UPT"])
-    if UPT is None:  # si no hay UPTD, devuelve 0 y 0
-        return 0, 0
-    # UPTD promedio por artículo
+
+    if UPT is None or ART is None:
+        return 0, []
+
+    # --- UPTD promedio por artículo ---
     upt = df[[ART,UPT]].copy()
     upt[UPT] = pd.to_numeric(upt[UPT], errors="coerce")
     uptd_art = upt.groupby(ART)[UPT].mean().reset_index().rename(columns={UPT:"UPTD_mean"})
-    # Cobertura por artículo
+
+    # --- Cobertura por artículo ---
     cov = cobertura_por_articulo(df, totales_por_plaza, umbral_inv)
+
+    # --- Merge ---
     m = cov.merge(uptd_art, on=ART, how="left").fillna({"UPTD_mean":0})
-    kpi1 = int((m["UPTD_mean"] > 0).sum())
-    kpi2 = int(((m["UPTD_mean"] > 5) & (m["Cobertura_%"] == 0)).sum())
-    return kpi1, kpi2
+
+    # --- Filtro de KPI ---
+    filtro = (m["UPTD_mean"] > 5) & (m["Cobertura_%"] > 85)
+    seleccionados = m.loc[filtro, ART].tolist()
+
+    return len(seleccionados), seleccionados
 
 # === 3) Top UPTD con baja cobertura (<umbral) =================================
 def top_uptd_baja_cobertura(df, totales_por_plaza: dict, umbral_inv: int = 3, cov_thresh: float = 85.0):
