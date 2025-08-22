@@ -172,76 +172,40 @@ if fig_top_uptd:
 
 
 @st.cache_data
-def tabla_coberturas(df_venta_perdida_filtrada, tiendas_por_plaza):
-    # Acepta dict {"PLAZA": total_tiendas} o DF con columnas ["PLAZA","TIENDAS_TOTALES"]
-    if isinstance(tiendas_por_plaza, dict):
-        totales = pd.Series(tiendas_por_plaza, name="TIENDAS_TOTALES")
-        totales.index.name = "PLAZA"
-        totales = totales.reset_index()
-    else:
-        totales = tiendas_por_plaza.rename(columns={tiendas_por_plaza.columns[0]:"PLAZA",
-                                                    tiendas_por_plaza.columns[1]:"TIENDAS_TOTALES"})
+def graficar_coberturas(df, tiendas_por_plaza):
+    # Detectar columna de tienda
+    tienda_col = "NUM_TIENDA" if "NUM_TIENDA" in df.columns else "TIENDA"
 
-    # Requisitos mínimos
-    req = {"PLAZA", "ARTICULO"}
-    # Usa NUM_TIENDA si existe, si no usa TIENDA como proxy
-    tienda_col = "NUM_TIENDA" if "NUM_TIENDA" in df_venta_perdida_filtrada.columns else "TIENDA"
-    req = req | {tienda_col}
-    if not req.issubset(df_venta_perdida_filtrada.columns):
-        faltan = sorted(req - set(df_venta_perdida_filtrada.columns))
-        st.error(f"Faltan columnas para cobertura: {faltan}")
-        return None
+    # Calcular cuántas tiendas tienen el artículo por plaza
+    num = df.groupby(["PLAZA","ARTICULO"])[tienda_col].nunique().reset_index(name="TIENDAS_CON_ART")
+    tot = pd.DataFrame({"PLAZA":list(tiendas_por_plaza.keys()), "TIENDAS_TOTALES":list(tiendas_por_plaza.values())})
+    base = num.merge(tot, on="PLAZA", how="left")
+    base["COBERTURA"] = base["TIENDAS_CON_ART"] / base["TIENDAS_TOTALES"] * 100
 
-    df = df_venta_perdida_filtrada.copy()
-    df[tienda_col] = df[tienda_col].astype(str)
-    df["PLAZA"] = df["PLAZA"].astype(str)
-    df["ARTICULO"] = df["ARTICULO"].astype(str)
-
-    # Numerador: tiendas únicas con el artículo por plaza/artículo
-    numerador = (
-        df.groupby(["PLAZA","ARTICULO"])[tienda_col]
-          .nunique()
-          .reset_index(name="TIENDAS_CON_ARTICULO")
+    # Gráfico estilo heatmap
+    fig = px.imshow(
+        base.pivot(index="ARTICULO", columns="PLAZA", values="COBERTURA"),
+        text_auto=".1f", aspect="auto", color_continuous_scale=["#EF9A9A","#FFF59D","#B9F6CA"],
+        zmin=0, zmax=100
     )
+    fig.update_layout(
+        title="📊 Cobertura por Artículo y Plaza",
+        xaxis_title="Plaza", yaxis_title="Artículo", height=600
+    )
+    return fig
 
-    # Denominador: total de tiendas por plaza
-    base = numerador.merge(totales, on="PLAZA", how="left")
-
-    # % Cobertura y semáforo
-    base["% Cobertura"] = (base["TIENDAS_CON_ARTICULO"] / base["TIENDAS_TOTALES"] * 100).round(1)
-
-    def semaforo(p):
-        if pd.isna(p): return "⚪ Sin dato"
-        if p >= 95:    return "🟢 Verde"
-        if p >= 85:    return "🟡 Amarillo"
-        return "🔴 Rojo"
-
-    base["Semáforo"] = base["% Cobertura"].apply(semaforo)
-
-    # Ordena de menor a mayor cobertura (para ver primero los problemas)
-    base = base.sort_values(["% Cobertura","PLAZA","ARTICULO"], ascending=[True, True, True])
-
-    # Formatos bonitos
-    base["% Cobertura"] = base["% Cobertura"].map(lambda x: f"{x:.1f}%" if pd.notna(x) else "")
-
-    # Reordena columnas
-    cols = ["PLAZA","ARTICULO","TIENDAS_CON_ARTICULO","TIENDAS_TOTALES","% Cobertura","Semáforo"]
-    return base[cols]
-
-# --- Uso:
-# Ejemplo de totales por plaza (puedes pasarlo como dict o DataFrame)
+# Uso:
+# Diccionario de totales (ejemplo, reemplázalo con los reales)
 tiendas_por_plaza = {
-    "Baja California (Tijuana)": 300, "México": 800, "Jalisco": 400,
-    "Coahuila (Saltillo)": 150, "Nuevo León": 650, "Puebla": 200,
-    "Morelos": 120, "Yucatán": 180, "Quintana Roo": 160, "Sonora (Hermosillo)": 140,
-    "Tamaulipas (Reynosa)": 130, "Tamaulipas (Matamoros)": 90,
-    "Baja California (Mexicali)": 110, "Baja California (Ensenada)": 70,
-    "Coahuila (Torreón)": 95,
+    "México":800, "Nuevo León":650, "Jalisco":400, "Puebla":200,
+    "Morelos":120, "Quintana Roo":160, "Yucatán":180,
+    "Coahuila (Saltillo)":150, "Coahuila (Torreón)":95,
+    "Tamaulipas (Reynosa)":130, "Tamaulipas (Matamoros)":90,
+    "Baja California (Tijuana)":300,"Baja California (Mexicali)":110,
+    "Baja California (Ensenada)":70,"Sonora (Hermosillo)":140
 }
 
-tabla = tabla_coberturas(df_venta_perdida_filtrada, tiendas_por_plaza)
-if tabla is not None:
-    st.subheader("📊 Cobertura por Plaza y Artículo (Semáforo)")
-    st.dataframe(tabla, use_container_width=True)
+fig_cobertura = graficar_coberturas(df_venta_perdida_filtrada, tiendas_por_plaza)
+st.plotly_chart(fig_cobertura, use_container_width=True)
 
 
