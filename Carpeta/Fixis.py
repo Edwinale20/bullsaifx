@@ -1,4 +1,4 @@
-import pandas as pd
+zimport pandas as pd
 import glob
 import os
 import streamlit as st
@@ -221,7 +221,6 @@ if fig_top_uptd:
     st.plotly_chart(fig_top_uptd, use_container_width=True)
 
 
-@st.cache_data
 def cobertura_tabla(df):
     TOTALES = {
         "Coahuila (Saltillo)":85,"Coahuila (Torreón)":54,"Morelos":12,"México":390,
@@ -248,12 +247,16 @@ def cobertura_tabla(df):
 
     base["Cobertura %"] = (base["Tiendas_con_art"] / base["Tiendas_totales"] * 100).clip(0,100)
 
-    # Pivot final con reemplazo de NaN -> "Sin abasto"
+    # Pivot
     pivot = base.pivot(index=ART, columns=PLZ, values="Cobertura %")
-    pivot = pivot.fillna("Sin abasto")
+
+    # Redondear y formatear como porcentaje
+    pivot = pivot.round(0).astype("Int64").astype(str) + "%"
+
+    # Reemplazar "NaN%" -> "Sin abasto"
+    pivot = pivot.replace({"<NA>%": "Sin abasto"})
 
     return pivot
-
 
 pivot = cobertura_tabla(df_venta_perdida_filtrada)
 st.dataframe(pivot, use_container_width=True)
