@@ -15,8 +15,8 @@ import io
 
 st.set_page_config(page_title="Reporte de Abasto Comercial", page_icon="🏪", layout="wide", initial_sidebar_state="expanded")
 st.title("📊 Reporte de Abasto comercial 🏪")
-st.markdown("La intención de esta pagina es dar agilidad y poder garantizar tener el 100% de nuestros productos en cada Punto de venta")
 st.markdown("Arrastra aquí tu archivo de inventarios")
+st.markdown("Esta app analiza rápidamente las coberturas de todo el catálogo de tu categoría")
 st.markdown("Puedes hacer preguntas a la IA y ayudarte a identificar los productos en desabasto y con oportunidades. " \
 "Además de limpiar aquellos artículos con poco UPTD, con el fin de seguir el proceso de plan de choque")
 
