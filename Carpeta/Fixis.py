@@ -79,12 +79,23 @@ def Inventarios(archivo_zip):
 st.title("Inventarios")
 archivo_zip = st.file_uploader("Sube tu .zip con un CSV adentro", type=["zip"])
 
+if archivo is not None:
+    st.success(f"{archivo.name} cargado y procesado.")
+    # Aquí va tu lógica para leerlo
+else:
+    st.info("Arrastra aquí tu archivo de inventarios")
+
+
+
+
 INV = Inventarios(archivo_zip)  # <- como querías
 
 if INV is None:
     st.stop()
 
-st.success("CSV cargado y procesado.")
+st.success("✅Tus inventarios fueron cargados con éxito.")
+
+
 
 
 # Paso 1: Crear una lista de opciones para el filtro, incluyendo "Ninguno"
