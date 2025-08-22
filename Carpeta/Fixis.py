@@ -336,9 +336,9 @@ name, uptd, covp = top_uptd_baja_cobertura(df_venta_perdida_filtrada, TOTALES_PL
 with kpi_top:
     c6, c7, c8 = st.columns([4, 3, 4])
     with c6:
-        st.metric("Artículos con UPTD > 0", f"{k1}")
+        st.metric("🐌 Artículos con UPTD > 0", f"{k1}")
     with c7:
         st.metric("UPTD > 10 con 0% cobertura", f"{k2}")
     with c8:
         delta_txt = f"UPTD {uptd:.2f} • Cobertura {covp:.0f}%" if pd.notna(uptd) else "—"
-        st.metric("Mayor UPTD con baja cobertura", name, delta=delta_txt)
+        st.metric("⚠️ Mayor UPTD con baja cobertura", name, delta=delta_txt)
