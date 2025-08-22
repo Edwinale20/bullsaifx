@@ -260,6 +260,7 @@ def cobertura_tabla(df):
     return pivot, numeric
 
 # === USO ===
+# === USO CORRECTO ===
 pivot, numeric = cobertura_tabla(df_venta_perdida_filtrada)
 
 # Función para aplicar colores
@@ -276,12 +277,11 @@ def color_sem(serie):
             colors.append("background-color: #5cd65c; color: black;")  # Verde
     return colors
 
+# Estilo sobre numeric
 styled = numeric.style.apply(color_sem, axis=0).format("{:.0f}%").na_rep("Sin abasto")
 
-
-pivot, numeric = cobertura_tabla(df_venta_perdida_filtrada)
-st.dataframe(pivot, use_container_width=True)
-
+# 👇 OPCIÓN B: tabla con colores
+st.markdown(styled.to_html(), unsafe_allow_html=True)
 # === 1) Cobertura por artículo (global) ======================================
 def cobertura_por_articulo(df, totales_por_plaza: dict, umbral_inv: int = 3):
     pick = lambda names: next((c for c in names if c in df.columns), None)
