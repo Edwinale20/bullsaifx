@@ -255,7 +255,7 @@ def cobertura_tabla(df):
 
 pivot = cobertura_tabla(df_venta_perdida_filtrada)
 
-pivot = base.pivot(index=ART, columns=PLZ, values="Cobertura %")
+pivot = base.pivot(index="ARTICULO", columns="PLAZA", values="Cobertura %")
 
 # 👇 este paso cambia NaN -> "Sin abasto"
 pivot = pivot.fillna("Sin abasto")
