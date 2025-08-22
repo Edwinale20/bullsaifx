@@ -312,33 +312,26 @@ def cobertura_por_articulo(df, totales_por_plaza: dict, umbral_inv: int = 3):
     return art  # columnas: [ARTICULO, Tiendas_con_art, Tiendas_totales, Cobertura_%]
 
 # === 2) KPIs rápidos: (UPTD>0) y (UPTD>10 & cobertura=0) =====================
-def kpis_avanzados(df, totales_por_plaza: dict, umbral_inv: int = 3):
-    """
-    Devuelve:
-      - Número de artículos con UPTD > 5 y Cobertura > 85%
-      - Lista con los nombres de esos artículos
-    """
-    # --- Identificar columnas ---
-    pick = lambda names: next((c for c in names if c in df.columns), None)
+def kpis_altos(df, totales_por_plaza: dict, umbral_inv: int = 3, cov_thresh: float = 85.0):
+    pick = lambda names: next((c for c in df.columns if c in names), None)
     ART = pick(["ARTICULO","Artículo","Articulo"])
     UPT = pick(["UPTD","UPT"])
-
-    if UPT is None or ART is None:
+    if ART is None or UPT is None:
         return 0, []
 
-    # --- UPTD promedio por artículo ---
-    upt = df[[ART,UPT]].copy()
+    # Cobertura
+    cov = cobertura_por_articulo(df, totales_por_plaza, umbral_inv)
+
+    # UPTD promedio
+    upt = df[[ART, UPT]].copy()
     upt[UPT] = pd.to_numeric(upt[UPT], errors="coerce")
     uptd_art = upt.groupby(ART)[UPT].mean().reset_index().rename(columns={UPT:"UPTD_mean"})
 
-    # --- Cobertura por artículo ---
-    cov = cobertura_por_articulo(df, totales_por_plaza, umbral_inv)
-
-    # --- Merge ---
+    # Merge
     m = cov.merge(uptd_art, on=ART, how="left").fillna({"UPTD_mean":0})
 
-    # --- Filtro de KPI ---
-    filtro = (m["UPTD_mean"] > 5) & (m["Cobertura_%"] > 85)
+    # Filtro
+    filtro = (m["UPTD_mean"] > 5) & (m["Cobertura_%"] > cov_thresh)
     seleccionados = m.loc[filtro, ART].tolist()
 
     return len(seleccionados), seleccionados
@@ -381,7 +374,8 @@ with kpi_top:
     with c6:
         st.metric("🐌 Artículos con UPTD > 0", f"{k1}")
     with c7:
-        st.metric("UPTD > 5 con 0% cobertura", f"{k2}")
+        st.metric("✅ UPTD > 5 y Cobertura > 85%", f"{k3}")
+        st.write(", ".join(lista_k3) if lista_k3 else "—")
     with c8:
         delta_txt = f"UPTD {uptd:.2f} • Cobertura {covp:.0f}%" if pd.notna(uptd) else "—"
         st.metric("⚠️ Mayor UPTD con baja cobertura", name, delta=delta_txt)
