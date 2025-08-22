@@ -77,13 +77,20 @@ def Inventarios(archivo_zip):
 
 # --- AQUÍ defines el uploader y llamas a tu función ---
 st.title("Inventarios")
-archivo_zip = st.file_uploader("Sube tu .zip con un CSV adentro", type=["zip"])
+# Placeholder
+uploader_placeholder = st.empty()
+
+# El uploader vive dentro del placeholder
+archivo_zip = uploader_placeholder.file_uploader("Sube tu .zip con un CSV adentro", type=["zip"])
 
 if archivo_zip is not None:
+    # Quitar uploader
+    uploader_placeholder.empty()
+    
     st.success(f"{archivo_zip.name} cargado y procesado.")
-    # Aquí va tu lógica para leerlo
-else:
-    st.info("Arrastra aquí tu archivo de inventarios")
+    st.success("✅ Tus inventarios fueron cargados con éxito.")
+    
+    # Aquí va tu lógica para leer y procesar el archivo
 
 
 
