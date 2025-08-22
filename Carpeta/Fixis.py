@@ -338,7 +338,7 @@ with kpi_top:
     with c6:
         st.metric("🐌 Artículos con UPTD > 0", f"{k1}")
     with c7:
-        st.metric("UPTD > 10 con 0% cobertura", f"{k2}")
+        st.metric("UPTD > 5 con 0% cobertura", f"{k2}")
     with c8:
         delta_txt = f"UPTD {uptd:.2f} • Cobertura {covp:.0f}%" if pd.notna(uptd) else "—"
         st.metric("⚠️ Mayor UPTD con baja cobertura", name, delta=delta_txt)
