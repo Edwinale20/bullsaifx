@@ -182,7 +182,8 @@ def graficar_top_uptd(df_venta_perdida_filtrada):
     df["ARTICULO"] = df["ARTICULO"].astype(str)
     df["PLAZA"] = df["PLAZA"].astype(str)
     df["UPTD"] = pd.to_numeric(df["UPTD"], errors="coerce")
-    df = df.dropna(subset=["UPTD"])
+    df["UPTD"] = df["UPTD"].fillna("No hay abasto")
+
 
     # Top 10 por UPTD promedio global (artículo)
     ranking = (
