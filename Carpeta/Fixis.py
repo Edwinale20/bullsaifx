@@ -76,7 +76,6 @@ def Inventarios(archivo_zip):
     return combined_df
 
 #---------------------------------------------------------------------------------------- AQUÍ defines el uploader y llamas a tu función ---
-st.title("Inventarios")
 # Placeholder
 uploader_placeholder = st.empty()
 
