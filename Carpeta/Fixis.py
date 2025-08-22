@@ -375,9 +375,7 @@ k3, lista_k3 = kpis_altos(
 )
 
 with kpi_top:
-    c6, c7, c8 = st.columns([4, 3, 4])
-    with c6:
-        st.metric("🐌 Artículos con UPTD > 0", f"{k1}")
+    c7, c8 = st.columns([3, 4])
     with c7:
         st.metric("✅ UPTD > 5 y Cobertura > 85%", f"{k3}")
         st.write(", ".join(lista_k3) if lista_k3 else "—")
