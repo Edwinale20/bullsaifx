@@ -278,9 +278,9 @@ def color_sem(serie):
     return colors
 
 # Estilo sobre numeric
-styled = numeric.style.apply(color_sem, axis=0).format("{:.0f}%").na_rep("Sin abasto")
+styled = numeric.style.apply(color_sem, axis=0).format("{:.0f}%", na_rep="Sin abasto")
 
-# 👇 OPCIÓN B: tabla con colores
+# 👇 Mostrar con colores en Streamlit
 st.markdown(styled.to_html(), unsafe_allow_html=True)
 # === 1) Cobertura por artículo (global) ======================================
 def cobertura_por_articulo(df, totales_por_plaza: dict, umbral_inv: int = 3):
