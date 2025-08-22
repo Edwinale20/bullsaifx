@@ -95,7 +95,7 @@ INV = Inventarios(archivo_zip)  # <- como querías
 if INV is None:
     st.stop()
 
-st.success("✅Tus inventarios fueron cargados con éxito.")
+st.success("✅Los inventarios de tu categoría fueron cargados con éxito.")
 
 #----------------------------------------------------------------------------------------
 
