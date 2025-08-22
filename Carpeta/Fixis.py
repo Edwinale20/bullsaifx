@@ -12,7 +12,7 @@ import io
 
 #----------------------------------------------------------------------------------------
 
-
+   
 st.set_page_config(page_title="Reporte de Abasto y Clientes Comercial", page_icon="🏪", layout="wide", initial_sidebar_state="expanded")
 st.title("📊 Reporte de Abasto y Clientes comercial 🏪")
 st.markdown("✅ Arrastra aquí tu archivo de inventarios")
