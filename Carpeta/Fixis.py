@@ -172,62 +172,71 @@ if fig_top_uptd:
 
 
 @st.cache_data
-def tabla_cobertura_semaforo(df_venta_perdida_filtrada, totales_por_plaza: dict | None = None, orden_columnas: list[str] | None = None):
-    # totales internos (edítalos si quieres aquí mismo)
-    default_totales = {
-        "Coahuila (Saltillo)":150, "Coahuila (Torreón)":95, "Morelos":120, "México":800,
-        "Nuevo León":650, "Puebla":200, "Quintana Roo":160, "Tamaulipas (Matamoros)":90,
-        "Tamaulipas (Reynosa)":130, "Baja California (Tijuana)":300, "Baja California (Mexicali)":110,
-        "Baja California (Ensenada)":70, "Jalisco":400, "Yucatán":180, "Sonora (Hermosillo)":140
-    }
-    totales = totales_por_plaza or default_totales
+def calcular_cobertura_tabla(df, totales_por_plaza: dict):
+    """
+    Calcula la cobertura y devuelve una tabla tipo Excel estilizada.
+    Cobertura % = tiendas únicas con el artículo / tiendas totales de la plaza * 100
+    """
+    # Columnas esperadas (toma la que exista)
+    articulo = "Artículo" if "Artículo" in df.columns else "ARTICULO"
+    plaza    = "Plaza"    if "Plaza"    in df.columns else "PLAZA"
+    tienda   = "NUM_TIENDA" if "NUM_TIENDA" in df.columns else ("TIENDA" if "TIENDA" in df.columns else "Tienda")
 
-    # columnas requeridas
-    tienda_col = "NUM_TIENDA" if "NUM_TIENDA" in df_venta_perdida_filtrada.columns else ("TIENDA" if "TIENDA" in df_venta_perdida_filtrada.columns else None)
-    need = {"PLAZA","ARTICULO",tienda_col}
-    if None in need or not need.issubset(df_venta_perdida_filtrada.columns):
-        st.error("Se requieren columnas: PLAZA, ARTICULO y NUM_TIENDA/TIENDA.")
-        return None
+    # Tiendas con el artículo por (Artículo, Plaza)
+    g = (df[[articulo, plaza, tienda]].astype(str)
+           .groupby([articulo, plaza])[tienda].nunique()
+           .reset_index(name="Tiendas_con_art"))
 
-    df = df_venta_perdida_filtrada[["PLAZA","ARTICULO",tienda_col]].astype(str).copy()
+    # Totales por plaza
+    tot = pd.DataFrame({plaza:list(totales_por_plaza.keys()), "Tiendas_totales":list(totales_por_plaza.values())})
+    base = g.merge(tot, on=plaza, how="left")
 
-    # numerador: tiendas únicas con el artículo por plaza/artículo
-    num = df.groupby(["PLAZA","ARTICULO"])[tienda_col].nunique().reset_index(name="TIENDAS_CON_ART")
-    # denominador: totales por plaza
-    tot = pd.DataFrame({"PLAZA": list(totales.keys()), "TIENDAS_TOTALES": list(totales.values())})
-    base = num.merge(tot, on="PLAZA", how="left")
+    # % Cobertura
+    base["Cobertura %"] = (base["Tiendas_con_art"] / base["Tiendas_totales"] * 100).round(0).clip(0,100)
 
-    # fallback si falta total: usa máximo observado por plaza
-    if base["TIENDAS_TOTALES"].isna().any():
-        obs = df.groupby("PLAZA")[tienda_col].nunique().rename("OBS").reset_index()
-        base = base.merge(obs, on="PLAZA", how="left")
-        base["TIENDAS_TOTALES"] = base["TIENDAS_TOTALES"].fillna(base["OBS"])
-        base = base.drop(columns="OBS")
+    # Pivot: filas=Artículo, columnas=Plaza
+    pivot = base.pivot(index=articulo, columns=plaza, values="Cobertura %")
 
-    # % cobertura
-    base["COBERTURA"] = (base["TIENDAS_CON_ART"] / base["TIENDAS_TOTALES"] * 100)
-
-    # pivote: filas=Artículo, columnas=Plaza, valores=% cobertura
-    pv = base.pivot_table(index="ARTICULO", columns="PLAZA", values="COBERTURA", aggfunc="mean")
-    if orden_columnas:
-        pv = pv.reindex(columns=[c for c in orden_columnas if c in pv.columns])
-
-    # estilos de semáforo
-    def color(v):
-        if pd.isna(v): return "background-color:white; color:#666;"
-        if v >= 95:    return "background-color:#B9F6CA;"   # verde
-        if v >= 85:    return "background-color:#FFF59D;"   # amarillo
-        return "background-color:#EF9A9A;"                  # rojo
-
-    styler = (pv.style.format("{:.0f}%").applymap(color).set_properties(**{"text-align":"center"}))
-    return styler
-
-# USO (una línea para mostrar):
-styler = tabla_cobertura_semaforo(df_venta_perdida_filtrada)
-if styler is not None:
-    st.subheader("📋 Cobertura por Artículo y Plaza (Semáforo)")
-    st.dataframe(styler, use_container_width=True)
+    # Semáforo
+    def color(val):
+        if pd.isna(val): return ""
+        if val >= 95:    return "background-color: #B9F6CA; text-align:center"
+        if val >= 85:    return "background-color: #FFF59D; text-align:center"
+        return "background-color: #EF9A9A; text-align:center"
+    return pivot.style.format("{:.0f}%").applymap(color)
 
 
-fig = grafico_cobertura(df_venta_perdida_filtrada)  # todo interno; edita los totales dentro si quieres
-st.plotly_chart(fig, use_container_width=True)
+def grafico_cobertura_mercado(df, totales_por_plaza: dict):
+    """
+    Gráfica de barras: % cobertura por Mercado (si no existe, por Plaza).
+    """
+    articulo = "Artículo" if "Artículo" in df.columns else "ARTICULO"
+    plaza    = "Plaza"    if "Plaza"    in df.columns else "PLAZA"
+    tienda   = "NUM_TIENDA" if "NUM_TIENDA" in df.columns else ("TIENDA" if "TIENDA" in df.columns else "Tienda")
+    mercado  = "Mercado" if "Mercado" in df.columns else ("MERCADO" if "MERCADO" in df.columns else None)
+
+    g = (df[[plaza, articulo, tienda] + ([mercado] if mercado else [])].astype(str)
+           .groupby([plaza, articulo])[tienda].nunique()
+           .reset_index(name="Tiendas_con_art"))
+    tot = pd.DataFrame({plaza:list(totales_por_plaza.keys()), "Tiendas_totales":list(totales_por_plaza.values())})
+    base = g.merge(tot, on=plaza, how="left")
+    base["Cobertura %"] = (base["Tiendas_con_art"] / base["Tiendas_totales"] * 100).clip(0,100)
+
+    if mercado:
+        m = df[[plaza, mercado]].drop_duplicates()
+        base = base.merge(m, on=plaza, how="left")
+        res = base.groupby(mercado)["Cobertura %"].mean().reset_index()
+        x = mercado
+    else:
+        res = base.groupby(plaza)["Cobertura %"].mean().reset_index()
+        x = plaza
+
+    fig = px.bar(res.sort_values("Cobertura %", ascending=False), x=x, y="Cobertura %",
+                 color="Cobertura %", color_continuous_scale=["#EF9A9A","#FFF59D","#B9F6CA"],
+                 range_color=(0,100), title="Cobertura promedio por " + x)
+    fig.update_layout(showlegend=False, yaxis_title="Cobertura (%)", xaxis_tickangle=-30)
+    return fig
+
+
+styled = calcular_cobertura_tabla(df_venta_perdida_filtrada, totales)
+st.dataframe(styled, use_container_width=True)
