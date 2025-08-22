@@ -100,7 +100,8 @@ st.success("✅Los inventarios de tu categoría fueron cargados con éxito.")
 #----------------------------------------------------------------------------------------
 
 
-
+st.sidebar.image("https://raw.githubusercontent.com/Edwinale20/bullsaifx/main/folder/el-logo.png", width=170)
+st.sidebar.title("Filtros 🔠")
 # Paso 1: Crear una lista de opciones para el filtro, incluyendo "Ninguno"
 
 opciones_division = ['Ninguno'] + list(INV['Division'].unique())
