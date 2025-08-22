@@ -13,7 +13,7 @@ import io
 
 
 
-st.set_page_config(page_title="Reporte de Abasto", page_icon="🏪", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Reporte de Abasto Comercial", page_icon="🏪", layout="wide", initial_sidebar_state="expanded")
 st.title("📊 Reporte de Abasto comercial 🏪")
 st.markdown("La intención de esta pagina es dar agilidad y poder garantizar tener el 100% de nuestros productos en cada Punto de venta")
 st.markdown("Arrastra aquí tu archivo de inventarios")
@@ -41,7 +41,7 @@ st.write("Columnas disponibles:", list(df.columns))
 st.dataframe(df.head(), use_container_width=True)
 
 # 3) Gráfica de prueba (deja aquí tus columnas)
-X_COL = "TIENDA"  # ← pon aquí la columna para eje X (ej. "Tienda")
+X_COL = "ARTICULO"  # ← pon aquí la columna para eje X (ej. "Tienda")
 Y_COL = "UDS_INVENTARIO"  # ← pon aquí la columna para eje Y (ej. "Ventas")
 
 if X_COL and Y_COL and X_COL in df.columns and Y_COL in df.columns:
