@@ -175,10 +175,10 @@ if fig_top_uptd:
 @st.cache_data
 def cobertura_tabla_y_grafica(df):
     TOTALES = {
-        "Coahuila (Saltillo)":150,"Coahuila (Torreón)":95,"Morelos":120,"México":800,
-        "Nuevo León":650,"Puebla":200,"Quintana Roo":160,"Tamaulipas (Matamoros)":90,
-        "Tamaulipas (Reynosa)":130,"Baja California (Tijuana)":300,"Baja California (Mexicali)":110,
-        "Baja California (Ensenada)":70,"Jalisco":400,"Yucatán":180,"Sonora (Hermosillo)":140,
+        "Coahuila (Saltillo)":85,"Coahuila (Torreón)":54,"Morelos":12,"México":393,
+        "Nuevo León":751,"Puebla":22,"Quintana Roo":103,"Tamaulipas (Matamoros)":59,
+        "Tamaulipas (Reynosa)":168,"Baja California (Tijuana)":86,"Baja California (Mexicali)":61,
+        "Baja California (Ensenada)":24,"Jalisco":181,"Yucatán":30,"Sonora (Hermosillo)":21,
     }
     ART = "ARTICULO" if "ARTICULO" in df.columns else "Artículo"
     PLZ = "PLAZA" if "PLAZA" in df.columns else "Plaza"
