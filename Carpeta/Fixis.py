@@ -172,40 +172,66 @@ if fig_top_uptd:
 
 
 @st.cache_data
-def graficar_coberturas(df, tiendas_por_plaza):
-    # Detectar columna de tienda
+ef grafico_cobertura(df, tiendas_por_plaza, orden_columnas=None):
+    # Detecta columna de tienda
     tienda_col = "NUM_TIENDA" if "NUM_TIENDA" in df.columns else "TIENDA"
+    req = {"PLAZA","ARTICULO",tienda_col}
+    if not req.issubset(df.columns):
+        st.error(f"Faltan columnas: {sorted(req - set(df.columns))}")
+        return
 
-    # Calcular cuántas tiendas tienen el artículo por plaza
-    num = df.groupby(["PLAZA","ARTICULO"])[tienda_col].nunique().reset_index(name="TIENDAS_CON_ART")
-    tot = pd.DataFrame({"PLAZA":list(tiendas_por_plaza.keys()), "TIENDAS_TOTALES":list(tiendas_por_plaza.values())})
+    d = df[["PLAZA","ARTICULO",tienda_col]].astype(str)
+    num = d.groupby(["PLAZA","ARTICULO"])[tienda_col].nunique().reset_index(name="TIENDAS_CON_ART")
+    tot = pd.DataFrame({"PLAZA": list(tiendas_por_plaza.keys()),
+                        "TIENDAS_TOTALES": list(tiendas_por_plaza.values())})
     base = num.merge(tot, on="PLAZA", how="left")
     base["COBERTURA"] = base["TIENDAS_CON_ART"] / base["TIENDAS_TOTALES"] * 100
 
-    # Gráfico estilo heatmap
-    fig = px.imshow(
-        base.pivot(index="ARTICULO", columns="PLAZA", values="COBERTURA"),
-        text_auto=".1f", aspect="auto", color_continuous_scale=["#EF9A9A","#FFF59D","#B9F6CA"],
-        zmin=0, zmax=100
-    )
+    pv = base.pivot_table(index="ARTICULO", columns="PLAZA", values="COBERTURA", aggfunc="mean")
+    if orden_columnas:
+        pv = pv.reindex(columns=[c for c in orden_columnas if c in pv.columns])
+
+    # Texto % en cada celda (o vacío si NaN)
+    text = pv.applymap(lambda v: "" if pd.isna(v) else f"{v:.0f}%").values
+
+    # Colores por umbral (rojo <85, amarillo 85–94, verde >=95), NaN = blanco
+    z = pv.values
+    colorscale = [
+        [0.00, "#EF9A9A"], [0.85, "#EF9A9A"],   # rojo hasta 85
+        [0.85, "#FFF59D"], [0.95, "#FFF59D"],   # amarillo 85–95
+        [0.95, "#B9F6CA"], [1.00, "#B9F6CA"],   # verde 95–100
+    ]
+    fig = go.Figure(data=go.Heatmap(
+        z=z/100.0,  # normalizamos 0–1 para usar los cortes del colorscale
+        x=pv.columns.tolist(),
+        y=pv.index.tolist(),
+        text=text,
+        texttemplate="%{text}",
+        textfont=dict(size=11),
+        colorscale=colorscale,
+        zmin=0, zmax=1,
+        showscale=False,     # sin barra
+        hovertemplate="<b>%{y}</b><br>%{x}<br>%{text}<extra></extra>",
+        xgap=1, ygap=1,      # “bordecito” entre celdas
+        coloraxis=None
+    ))
     fig.update_layout(
         title="📊 Cobertura por Artículo y Plaza",
-        xaxis_title="Plaza", yaxis_title="Artículo", height=600
+        xaxis_title="Plaza",
+        yaxis_title="Artículo",
+        yaxis=dict(autorange="reversed"),  # como Excel: primero arriba
+        plot_bgcolor="white", paper_bgcolor="white",
+        margin=dict(l=10, r=10, t=50, b=10), height=650
     )
     return fig
 
-# Uso:
-# Diccionario de totales (ejemplo, reemplázalo con los reales)
-tiendas_por_plaza = {
-    "México":800, "Nuevo León":650, "Jalisco":400, "Puebla":200,
-    "Morelos":120, "Quintana Roo":160, "Yucatán":180,
-    "Coahuila (Saltillo)":150, "Coahuila (Torreón)":95,
-    "Tamaulipas (Reynosa)":130, "Tamaulipas (Matamoros)":90,
-    "Baja California (Tijuana)":300,"Baja California (Mexicali)":110,
-    "Baja California (Ensenada)":70,"Sonora (Hermosillo)":140
-}
+# USO
+# orden opcional como tu screenshot
+orden = ["Coahuila (Saltillo)","Coahuila (Torreón)","Morelos","México","Nuevo León",
+         "Puebla","Quintana Roo","Tamaulipas (Matamoros)","Tamaulipas (Reynosa)",
+         "Baja California (Tijuana)","Baja California (Mexicali)","Baja California (Ensenada)",
+         "Jalisco","Yucatán","Sonora (Hermosillo)"]
 
-fig_cobertura = graficar_coberturas(df_venta_perdida_filtrada, tiendas_por_plaza)
-st.plotly_chart(fig_cobertura, use_container_width=True)
-
+fig = grafico_cobertura(df_venta_perdida_filtrada, tiendas_por_plaza, orden_columnas=orden)
+st.plotly_chart(fig, use_container_width=True)
 
