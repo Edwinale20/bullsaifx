@@ -220,7 +220,7 @@ fig_top_uptd = graficar_top_uptd(df_venta_perdida_filtrada)
 if fig_top_uptd:
     st.plotly_chart(fig_top_uptd, use_container_width=True)
 
-
+#----------------------------------------------------------------------------------------
 @st.cache_data
 def cobertura_tabla(df):
     TOTALES = {
