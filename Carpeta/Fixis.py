@@ -19,6 +19,7 @@ st.markdown("✅ Arrastra aquí tu archivo de inventarios")
 st.markdown("✅ Esta app analiza rápidamente las coberturas de todo el catálogo de tu categoría")
 st.markdown("✅ Puedes hacer preguntas a la IA y ayudarte a identificar los productos en desabasto y con oportunidades. " \
 "Además de limpiar aquellos artículos con poco UPTD, con el fin de seguir el proceso de plan de choque")
+kpi_top = st.container()
 
 
     
@@ -301,7 +302,6 @@ TOTALES_PLAZA = {
 
 
 
-kpi_top = st.container()
 
 # KPI 1 y 2
 k1, k2 = kpis_basicos(df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3)
