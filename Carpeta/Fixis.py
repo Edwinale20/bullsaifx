@@ -95,7 +95,7 @@ if X_COL in INV.columns and Y_COL in INV.columns and X_COL and Y_COL:
 
 # Paso 1: Crear una lista de opciones para el filtro, incluyendo "Ninguno"
 
-opciones_division = ['Ninguno'] + list(INV['DIVISION'].unique())
+opciones_division = ['Ninguno'] + list(INV['Division'].unique())
 division = st.sidebar.selectbox('Seleccione la División', opciones_division)
 
 opciones_plaza = ['Ninguno'] + list(INV['PLAZA'].unique())
@@ -119,7 +119,7 @@ categoria = st.sidebar.selectbox('Seleccione la Categoria', opciones_categoria)
 if division == 'Ninguno':
     df_venta_perdida_filtrada = INV
 else:
-    df_venta_perdida_filtrada = INV[INV['DIVISION'] == division]
+    df_venta_perdida_filtrada = INV[INV['Division'] == division]
 
 # Filtrar por Plaza
 if plaza != 'Ninguno':
@@ -134,6 +134,3 @@ if categoria != 'Ninguno':
     df_venta_perdida_filtrada = df_venta_perdida_filtrada[df_venta_perdida_filtrada['SUBCATEGORIA'] == categoria]
 
 
-# Modificar la columna 'Semana Contable' en ambos DataFrames
-
-df_venta_perdida_filtrada = df_venta_perdida_filtrada[df_venta_perdida_filtrada['FAMILIA'] != 'BYE']
