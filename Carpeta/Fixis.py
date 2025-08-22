@@ -118,7 +118,7 @@ categoria = st.sidebar.selectbox('Seleccione la Categoria', opciones_categoria)
 opciones_proveedor = ['Ninguno'] + list(INV['PROVEEDOR'].unique())
 proveedor = st.sidebar.selectbox('Seleccione el Proveedor', opciones_proveedor)
 
-umbral_uptd = st.sidebar.slider('Filtrar artículos con UPTD mayor a:', 0, int(df_venta_perdida['UPTD'].max()), 0, 1)  
+umbral_uptd = st.sidebar.slider('Filtrar artículos con UPTD mayor a:', 0, int(INV['UPTD'].max()), 0, 1)
 
 
 # Filtrar por Proveedor
@@ -144,8 +144,7 @@ if proveedor != 'Ninguno':
     df_venta_perdida_filtrada = df_venta_perdida_filtrada[df_venta_perdida_filtrada['PROVEEDOR'] == proveedor]
     
 if umbral_uptd > 0:
-    df_venta_perdida_filtrada = df_venta_perdida[df_venta_perdida['UPTD'] > umbral_uptd]
-
+    df_venta_perdida_filtrada = df_venta_perdida_filtrada[df_venta_perdida_filtrada['UPTD'] > umbral_uptd]
 #----------------------------------------------------------------------------------------
 
 
