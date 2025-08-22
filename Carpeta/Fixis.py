@@ -172,7 +172,7 @@ if fig_top_uptd:
 
 
 @st.cache_data
-ef grafico_cobertura(df, tiendas_por_plaza, orden_columnas=None):
+def grafico_cobertura(df, tiendas_por_plaza, orden_columnas=None):
     # Detecta columna de tienda
     tienda_col = "NUM_TIENDA" if "NUM_TIENDA" in df.columns else "TIENDA"
     req = {"PLAZA","ARTICULO",tienda_col}
