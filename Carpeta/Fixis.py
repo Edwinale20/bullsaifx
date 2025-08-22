@@ -100,7 +100,8 @@ mercado = st.sidebar.selectbox('Seleccione el Mercado', opciones_mercado)
 opciones_categoria = ['Ninguno'] + list(INV['SUBCATEGORIA'].unique())
 categoria = st.sidebar.selectbox('Seleccione la Categoria', opciones_categoria)
 
-
+opciones_proveedor = ['Ninguno'] + list(INV['PROVEEDOR'].unique())
+proveedor = st.sidebar.selectbox('Seleccione el Proveedor', opciones_proveedor)
 
 # Filtrar por Proveedor
 if division == 'Ninguno':
@@ -120,6 +121,9 @@ if mercado != 'Ninguno':
 if categoria != 'Ninguno':
     df_venta_perdida_filtrada = df_venta_perdida_filtrada[df_venta_perdida_filtrada['SUBCATEGORIA'] == categoria]
 
+# Filtrar por Proveedor
+if proveedor != 'Ninguno':
+    df_venta_perdida_filtrada = df_venta_perdida_filtrada[df_venta_perdida_filtrada['PROVEEDOR'] == proveedor]
 
 @st.cache_data
 def graficar_top_uptd(df_venta_perdida_filtrada):
