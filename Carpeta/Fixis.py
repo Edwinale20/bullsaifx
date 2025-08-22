@@ -172,69 +172,51 @@ if fig_top_uptd:
 
 
 @st.cache_data
+@st.cache_data
 def cobertura_tabla_y_grafica(df):
-    """
-    Devuelve (tabla_styler, fig_barras). Todo dentro de esta función.
-    Cobertura % = tiendas únicas con el artículo / tiendas totales de la plaza * 100
-    Semáforo: ≥95 verde, 85–94 amarillo, <85 rojo.
-    """
-    # --- Totales por plaza (edítalos aquí si cambian) ---
     TOTALES = {
-        "Coahuila (Saltillo)":150, "Coahuila (Torreón)":95, "Morelos":120, "México":800,
-        "Nuevo León":650, "Puebla":200, "Quintana Roo":160, "Tamaulipas (Matamoros)":90,
-        "Tamaulipas (Reynosa)":130, "Baja California (Tijuana)":300, "Baja California (Mexicali)":110,
-        "Baja California (Ensenada)":70, "Jalisco":400, "Yucatán":180, "Sonora (Hermosillo)":140
+        "Coahuila (Saltillo)":150,"Coahuila (Torreón)":95,"Morelos":120,"México":800,
+        "Nuevo León":650,"Puebla":200,"Quintana Roo":160,"Tamaulipas (Matamoros)":90,
+        "Tamaulipas (Reynosa)":130,"Baja California (Tijuana)":300,"Baja California (Mexicali)":110,
+        "Baja California (Ensenada)":70,"Jalisco":400,"Yucatán":180,"Sonora (Hermosillo)":140,
     }
-
-    # --- Columnas (toma las que existan) ---
     ART = "ARTICULO" if "ARTICULO" in df.columns else "Artículo"
-    PLZ = "PLAZA"    if "PLAZA"    in df.columns else "Plaza"
+    PLZ = "PLAZA" if "PLAZA" in df.columns else "Plaza"
     TND = "NUM_TIENDA" if "NUM_TIENDA" in df.columns else ("TIENDA" if "TIENDA" in df.columns else "Tienda")
     MRD = "MERCADO" if "MERCADO" in df.columns else ("Mercado" if "Mercado" in df.columns else None)
 
-    # --- Numerador: tiendas únicas con el artículo por plaza ---
-    g = (df[[ART, PLZ, TND]].astype(str)
-           .groupby([ART, PLZ])[TND].nunique()
-           .reset_index(name="Tiendas_con_art"))
-
-    # --- Denominador: totales por plaza (con fallback si falta alguna) ---
+    g = (df[[ART,PLZ,TND]].astype(str).groupby([ART,PLZ])[TND].nunique().reset_index(name="Tiendas_con_art"))
     tot = pd.DataFrame({PLZ:list(TOTALES.keys()), "Tiendas_totales":list(TOTALES.values())})
     base = g.merge(tot, on=PLZ, how="left")
     if base["Tiendas_totales"].isna().any():
         obs = df.groupby(PLZ)[TND].nunique().rename("obs").reset_index()
         base = base.merge(obs, on=PLZ, how="left")
         base["Tiendas_totales"] = base["Tiendas_totales"].fillna(base["obs"])
-
-    # --- Cobertura % ---
     base["Cobertura %"] = (base["Tiendas_con_art"] / base["Tiendas_totales"] * 100).clip(0,100)
 
-    # --- TABLA tipo Excel con semáforo ---
-    pv = base.pivot(index=ART, columns=PLZ, values="Cobertura %")
-    def color(v):
-        if pd.isna(v): return ""
-        if v >= 95: return "background-color:#B9F6CA; text-align:center"
-        if v >= 85: return "background-color:#FFF59D; text-align:center"
-        return "background-color:#EF9A9A; text-align:center"
-    tabla_styler = pv.style.format("{:.0f}%").applymap(color)
+    pivot = base.pivot(index=ART, columns=PLZ, values="Cobertura %")  # <- DataFrame (sí se cachea)
 
-    # --- GRÁFICA: cobertura promedio por mercado (o por plaza si no hay mercado) ---
     if MRD:
-        m = df[[PLZ, MRD]].drop_duplicates()
+        m = df[[PLZ,MRD]].drop_duplicates()
         b2 = base.merge(m, on=PLZ, how="left")
-        res = b2.groupby(MRD)["Cobertura %"].mean().reset_index()
-        xlab = MRD
+        res = b2.groupby(MRD)["Cobertura %"].mean().reset_index(); xlab = MRD
     else:
-        res = base.groupby(PLZ)["Cobertura %"].mean().reset_index()
-        xlab = PLZ
+        res = base.groupby(PLZ)["Cobertura %"].mean().reset_index(); xlab = PLZ
 
     fig = px.bar(res.sort_values("Cobertura %", ascending=False), x=xlab, y="Cobertura %",
                  color="Cobertura %", color_continuous_scale=["#EF9A9A","#FFF59D","#B9F6CA"],
                  range_color=(0,100), title="Cobertura promedio por " + xlab)
     fig.update_layout(showlegend=False, yaxis_title="Cobertura (%)", xaxis_tickangle=-30)
 
-    return tabla_styler, fig
+    return pivot, fig
 
+pivot, fig = cobertura_tabla_y_grafica(df_venta_perdida_filtrada)
 
-tabla, fig = cobertura_tabla_y_grafica(df_venta_perdida_filtrada)
-st.dataframe(tabla, use_container_width=True)
+def color(v):
+    if pd.isna(v): return ""
+    if v >= 95: return "background-color:#B9F6CA; text-align:center"
+    if v >= 85: return "background-color:#FFF59D; text-align:center"
+    return "background-color:#EF9A9A; text-align:center"
+
+st.dataframe(pivot.style.format("{:.0f}%").applymap(color), use_container_width=True)
 st.plotly_chart(fig, use_container_width=True)
