@@ -104,12 +104,6 @@ plaza = st.sidebar.selectbox('Seleccione la Plaza', opciones_plaza)
 opciones_mercado = ['Ninguno'] + list(INV['MERCADO'].unique())
 mercado = st.sidebar.selectbox('Seleccione el Mercado', opciones_mercado)
 
-opciones_semana = ['Ninguno'] + list(INV['Semana Contable'].unique())
-semana = st.sidebar.selectbox('Seleccione la semana', opciones_semana)
-
-opciones_familia = ['Ninguno'] + list(INV['FAMILIA'].unique())
-familia = st.sidebar.selectbox('Seleccione la Familia', opciones_familia)
-
 opciones_categoria = ['Ninguno'] + list(INV['SUBCATEGORIA'].unique())
 categoria = st.sidebar.selectbox('Seleccione la Categoria', opciones_categoria)
 
