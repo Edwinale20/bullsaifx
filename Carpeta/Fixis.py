@@ -10,7 +10,7 @@ import subprocess
 import zipfile
 import io
 
-
+#----------------------------------------------------------------------------------------
 
 
 st.set_page_config(page_title="Reporte de Abasto Comercial", page_icon="🏪", layout="wide", initial_sidebar_state="expanded")
@@ -22,7 +22,7 @@ st.markdown("✅ Puedes hacer preguntas a la IA y ayudarte a identificar los pro
 kpi_top = st.container()
 
 
-    
+#----------------------------------------------------------------------------------------   
 
 # --- TU FUNCIÓN: Déjala idéntica ---
 @st.cache_data
@@ -75,7 +75,7 @@ def Inventarios(archivo_zip):
 
     return combined_df
 
-# --- AQUÍ defines el uploader y llamas a tu función ---
+#---------------------------------------------------------------------------------------- AQUÍ defines el uploader y llamas a tu función ---
 st.title("Inventarios")
 # Placeholder
 uploader_placeholder = st.empty()
@@ -87,11 +87,7 @@ if archivo_zip is not None:
     # Quitar uploader
     uploader_placeholder.empty()
     
-    st.success(f"{archivo_zip.name} cargado y procesado.")
-    st.success("✅ Tus inventarios fueron cargados con éxito.")
-    
-    # Aquí va tu lógica para leer y procesar el archivo
-
+#----------------------------------------------------------------------------------------    
 
 
 
@@ -102,6 +98,7 @@ if INV is None:
 
 st.success("✅Tus inventarios fueron cargados con éxito.")
 
+#----------------------------------------------------------------------------------------
 
 
 
@@ -143,6 +140,10 @@ if categoria != 'Ninguno':
 # Filtrar por Proveedor
 if proveedor != 'Ninguno':
     df_venta_perdida_filtrada = df_venta_perdida_filtrada[df_venta_perdida_filtrada['PROVEEDOR'] == proveedor]
+#----------------------------------------------------------------------------------------
+
+
+
 
 @st.cache_data
 def graficar_top_uptd(df_venta_perdida_filtrada):
