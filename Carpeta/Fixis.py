@@ -297,7 +297,7 @@ def kpis_basicos(df, totales_por_plaza: dict, umbral_inv: int = 3):
     cov = cobertura_por_articulo(df, totales_por_plaza, umbral_inv)
     m = cov.merge(uptd_art, on=ART, how="left").fillna({"UPTD_mean":0})
     kpi1 = int((m["UPTD_mean"] > 0).sum())
-    kpi2 = int(((m["UPTD_mean"] > 10) & (m["Cobertura_%"] == 0)).sum())
+    kpi2 = int(((m["UPTD_mean"] > 5) & (m["Cobertura_%"] == 0)).sum())
     return kpi1, kpi2
 
 # === 3) Top UPTD con baja cobertura (<umbral) =================================
