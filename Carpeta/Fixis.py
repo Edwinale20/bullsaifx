@@ -13,8 +13,8 @@ import io
 #----------------------------------------------------------------------------------------
 
 
-st.set_page_config(page_title="Reporte de Abasto Comercial", page_icon="🏪", layout="wide", initial_sidebar_state="expanded")
-st.title("📊 Reporte de Abasto comercial 🏪")
+st.set_page_config(page_title="Reporte de Abasto y Clientes Comercial", page_icon="🏪", layout="wide", initial_sidebar_state="expanded")
+st.title("📊 Reporte de Abasto y Clientes comercial 🏪")
 st.markdown("✅ Arrastra aquí tu archivo de inventarios")
 st.markdown("✅ Esta app analiza en menos de 30 segundos las coberturas de todo el catálogo de tu categoría")
 st.markdown("✅ Puedes identificar los productos en desabasto, y aquellos con oportunidades." \
