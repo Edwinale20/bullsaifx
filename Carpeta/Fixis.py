@@ -79,7 +79,7 @@ def Inventarios(archivo_zip):
 uploader_placeholder = st.empty()
 
 # El uploader vive dentro del placeholder
-archivo_zip = uploader_placeholder.file_uploader("Sube tu .zip con un CSV adentro", type=["zip"])
+archivo_zip = uploader_placeholder.file_uploader("Sube tu archivo de Inventario (312 de BI)", type=["zip"])
 
 if archivo_zip is not None:
     # Quitar uploader
