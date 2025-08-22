@@ -84,13 +84,6 @@ if INV is None:
     st.stop()
 
 st.success("CSV cargado y procesado.")
-st.dataframe(INV.head(), use_container_width=True)
-
-# (Opcional) Gráfica de prueba: solo cambia X_COL / Y_COL
-X_COL = "TIENDA"  # p.ej. "PLAZA"
-Y_COL = "Valor Inventario"  # p.ej. "Valor Inventario"
-if X_COL in INV.columns and Y_COL in INV.columns and X_COL and Y_COL:
-    st.plotly_chart(px.bar(INV, x=X_COL, y=Y_COL), use_container_width=True)
 
 
 # Paso 1: Crear una lista de opciones para el filtro, incluyendo "Ninguno"
@@ -126,5 +119,58 @@ if mercado != 'Ninguno':
 # Filtrar por Categoria
 if categoria != 'Ninguno':
     df_venta_perdida_filtrada = df_venta_perdida_filtrada[df_venta_perdida_filtrada['SUBCATEGORIA'] == categoria]
+
+
+@st.cache_data
+def graficar_top_uptd(df_venta_perdida_filtrada):
+    # Requisitos mínimos
+    req = {"ARTICULO", "PLAZA", "UPTD"}
+    if not req.issubset(df_venta_perdida_filtrada.columns):
+        st.error(f"Faltan columnas: {sorted(req - set(df_venta_perdida_filtrada.columns))}")
+        return None
+
+    df = df_venta_perdida_filtrada.copy()
+    df["ARTICULO"] = df["ARTICULO"].astype(str)
+    df["PLAZA"] = df["PLAZA"].astype(str)
+    df["UPTD"] = pd.to_numeric(df["UPTD"], errors="coerce")
+    df = df.dropna(subset=["UPTD"])
+
+    # Top 10 por UPTD promedio global (artículo)
+    ranking = (
+        df.groupby("ARTICULO", as_index=False)["UPTD"].mean()
+          .sort_values("UPTD", ascending=False)
+          .head(10)
+    )
+    top_art = ranking["ARTICULO"].tolist()
+
+    # Agregar por PLAZA y ARTÍCULO (UPTD promedio) y ordenar según ranking
+    df_top = (
+        df[df["ARTICULO"].isin(top_art)]
+        .groupby(["PLAZA", "ARTICULO"], as_index=False)["UPTD"].mean()
+    )
+    df_top["ARTICULO"] = pd.Categorical(df_top["ARTICULO"], categories=top_art, ordered=True)
+
+    # Gráfica bonita (barras agrupadas por PLAZA)
+    fig = px.bar(
+        df_top, x="ARTICULO", y="UPTD", color="PLAZA", barmode="group",
+        text="UPTD", title="🔝 Top 10 artículos por UPTD (promedio) • por Plaza",
+        template="plotly_white", hover_data={"UPTD":":.2f"}
+    )
+    fig.update_traces(texttemplate="%{text:.2f}", textposition="outside")
+    fig.update_layout(
+        xaxis_title="Artículo", yaxis_title="UPTD promedio",
+        margin=dict(l=10,r=10,t=60,b=10), height=520, legend_title_text="PLAZA"
+    )
+    fig.update_xaxes(tickangle=-25)
+
+    return fig
+
+# Uso:
+fig_top_uptd = graficar_top_uptd(df_venta_perdida_filtrada)
+if fig_top_uptd:
+    st.plotly_chart(fig_top_uptd, use_container_width=True)
+
+
+
 
 
