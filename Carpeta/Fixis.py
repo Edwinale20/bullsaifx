@@ -248,36 +248,15 @@ def cobertura_tabla(df):
 
     base["Cobertura %"] = (base["Tiendas_con_art"] / base["Tiendas_totales"] * 100).clip(0,100)
 
-    # Solo pivot artículo vs plaza
+    # Pivot final con reemplazo de NaN -> "Sin abasto"
     pivot = base.pivot(index=ART, columns=PLZ, values="Cobertura %")
+    pivot = pivot.fillna("Sin abasto")
+
     return pivot
 
 
 pivot = cobertura_tabla(df_venta_perdida_filtrada)
-
-pivot = base.pivot(index="ARTICULO", columns="PLAZA", values="Cobertura %")
-
-# 👇 este paso cambia NaN -> "Sin abasto"
-pivot = pivot.fillna("Sin abasto")
-
-# Formato bonito
-def format_or_text(v):
-    if isinstance(v, str):   # ya es "Sin abasto"
-        return v
-    return f"{v:.0f}%"
-
-st.dataframe(
-    pivot.style.format(format_or_text).applymap(color),
-    use_container_width=True
-)
-def color(v):
-    if pd.isna(v): return ""
-    if v >= 95: return "background-color:#B9F6CA; text-align:center"
-    if v >= 85: return "background-color:#FFF59D; text-align:center"
-    return "background-color:#EF9A9A; text-align:center"
-
-st.dataframe(pivot.style.format("{:.0f}%").applymap(color), use_container_width=True)
-
+st.dataframe(pivot, use_container_width=True)
 
 # === 1) Cobertura por artículo (global) ======================================
 def cobertura_por_articulo(df, totales_por_plaza: dict, umbral_inv: int = 3):
