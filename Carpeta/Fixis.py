@@ -21,7 +21,7 @@ st.markdown("✅ Puedes hacer preguntas a la IA y ayudarte a identificar los pro
 "Además de limpiar aquellos artículos con poco UPTD, con el fin de seguir el proceso de plan de choque")
 
 
-
+  
 
 # --- TU FUNCIÓN: Déjala idéntica ---
 @st.cache_data
