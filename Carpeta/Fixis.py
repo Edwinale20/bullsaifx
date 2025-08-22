@@ -221,6 +221,7 @@ if fig_top_uptd:
     st.plotly_chart(fig_top_uptd, use_container_width=True)
 
 
+@st.cache_data
 def cobertura_tabla(df):
     TOTALES = {
         "Coahuila (Saltillo)":85,"Coahuila (Torreón)":54,"Morelos":12,"México":390,
@@ -247,16 +248,36 @@ def cobertura_tabla(df):
 
     base["Cobertura %"] = (base["Tiendas_con_art"] / base["Tiendas_totales"] * 100).clip(0,100)
 
-    # Pivot
     pivot = base.pivot(index=ART, columns=PLZ, values="Cobertura %")
 
-    # Redondear y formatear como porcentaje
-    pivot = pivot.round(0).astype("Int64").astype(str) + "%"
+    # Guardar versión numérica para estilo
+    numeric = pivot.copy()
 
-    # Reemplazar "NaN%" -> "Sin abasto"
+    # Formato porcentaje bonito
+    pivot = pivot.round(0).astype("Int64").astype(str) + "%"
     pivot = pivot.replace({"<NA>%": "Sin abasto"})
 
-    return pivot
+    return pivot, numeric
+
+# === USO ===
+pivot, numeric = cobertura_tabla(df_venta_perdida_filtrada)
+
+# Función para aplicar colores
+def color_sem(serie):
+    colors = []
+    for v in serie:
+        if pd.isna(v):  # Sin abasto
+            colors.append("background-color: lightgray; color: black;")
+        elif v < 40:
+            colors.append("background-color: #ff4d4d; color: white;")  # Rojo
+        elif v < 70:
+            colors.append("background-color: #ffd633; color: black;")  # Amarillo
+        else:
+            colors.append("background-color: #5cd65c; color: black;")  # Verde
+    return colors
+
+styled = numeric.style.apply(color_sem, axis=0).format("{:.0f}%").na_rep("Sin abasto")
+
 
 pivot = cobertura_tabla(df_venta_perdida_filtrada)
 st.dataframe(pivot, use_container_width=True)
