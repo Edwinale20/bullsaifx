@@ -224,3 +224,90 @@ def color(v):
 
 st.dataframe(pivot.style.format("{:.0f}%").applymap(color), use_container_width=True)
 st.plotly_chart(fig, use_container_width=True)
+
+
+# === 1) Cobertura por artículo (global) ======================================
+def cobertura_por_articulo(df, totales_por_plaza: dict, umbral_inv: int = 3):
+    pick = lambda names: next((c for c in names if c in df.columns), None)
+    ART = pick(["ARTICULO","Artículo","Articulo"])
+    PLZ = pick(["PLAZA","Plaza"])
+    TND = pick(["NUM_TIENDA","TIENDA","Tienda"])
+    INV = pick(["Unidades Inventario","UDS_INVENTARIO","Unidades","INVENTARIO_UNIDADES"])
+
+    d = df[[ART,PLZ,TND] + ([INV] if INV else [])].copy().astype({PLZ:str, TND:str, ART:str})
+    d["_pres"] = (pd.to_numeric(d[INV], errors="coerce").fillna(0) > umbral_inv) if INV else True
+    pres = d.groupby([ART,PLZ,TND], as_index=False)["_pres"].max()
+    num = pres.groupby([ART,PLZ])["_pres"].sum().reset_index(name="Tiendas_con_art")
+
+    tot = pd.DataFrame({PLZ:list(totales_por_plaza.keys()), "Tiendas_totales":list(totales_por_plaza.values())})
+    base = num.merge(tot, on=PLZ, how="left")
+
+    # Fallback si falta total para alguna plaza → usa tiendas observadas
+    if base["Tiendas_totales"].isna().any():
+        obs = pres.groupby(PLZ)[TND].nunique().rename("obs").reset_index()
+        base = base.merge(obs, on=PLZ, how="left")
+        base["Tiendas_totales"] = base["Tiendas_totales"].fillna(base["obs"])
+
+    # Cobertura GLOBAL del artículo (sumando plazas)
+    art = (base.groupby(ART)
+           .agg(Tiendas_con_art=("Tiendas_con_art","sum"),
+                Tiendas_totales=("Tiendas_totales","sum"))
+           .reset_index())
+    art["Cobertura_%"] = (art["Tiendas_con_art"]/art["Tiendas_totales"]*100).clip(0,100)
+    return art  # columnas: [ARTICULO, Tiendas_con_art, Tiendas_totales, Cobertura_%]
+
+# === 2) KPIs rápidos: (UPTD>0) y (UPTD>10 & cobertura=0) =====================
+def kpis_basicos(df, totales_por_plaza: dict, umbral_inv: int = 3):
+    pick = lambda names: next((c for c in names if c in df.columns), None)
+    ART = pick(["ARTICULO","Artículo","Articulo"])
+    UPT = pick(["UPTD","UPT"])
+    if UPT is None:  # si no hay UPTD, devuelve 0 y 0
+        return 0, 0
+    # UPTD promedio por artículo
+    upt = df[[ART,UPT]].copy()
+    upt[UPT] = pd.to_numeric(upt[UPT], errors="coerce")
+    uptd_art = upt.groupby(ART)[UPT].mean().reset_index().rename(columns={UPT:"UPTD_mean"})
+    # Cobertura por artículo
+    cov = cobertura_por_articulo(df, totales_por_plaza, umbral_inv)
+    m = cov.merge(uptd_art, on=ART, how="left").fillna({"UPTD_mean":0})
+    kpi1 = int((m["UPTD_mean"] > 0).sum())
+    kpi2 = int(((m["UPTD_mean"] > 10) & (m["Cobertura_%"] == 0)).sum())
+    return kpi1, kpi2
+
+# === 3) Top UPTD con baja cobertura (<umbral) =================================
+def top_uptd_baja_cobertura(df, totales_por_plaza: dict, umbral_inv: int = 3, cov_thresh: float = 85.0):
+    pick = lambda names: next((c for c in names if c in df.columns), None)
+    ART = pick(["ARTICULO","Artículo","Articulo"])
+    UPT = pick(["UPTD","UPT"])
+    if UPT is None:  # sin UPTD
+        return ("—", float("nan"), float("nan"))
+    cov = cobertura_por_articulo(df, totales_por_plaza, umbral_inv)
+    upt = df[[ART,UPT]].copy()
+    upt[UPT] = pd.to_numeric(upt[UPT], errors="coerce")
+    uptd_art = upt.groupby(ART)[UPT].mean().reset_index().rename(columns={UPT:"UPTD_mean"})
+    m = cov.merge(uptd_art, on=ART, how="left").dropna(subset=["UPTD_mean"])
+    m = m[m["Cobertura_%"] < cov_thresh].sort_values("UPTD_mean", ascending=False)
+    if m.empty: return ("—", float("nan"), float("nan"))
+    r = m.iloc[0]
+    return (str(r[ART]), float(r["UPTD_mean"]), float(r["Cobertura_%"]))
+
+
+TOTALES_PLAZA = {
+        "Coahuila (Saltillo)":85,"Coahuila (Torreón)":54,"Morelos":12,"México":390,
+        "Nuevo León":751,"Puebla":22,"Quintana Roo":79,"Tamaulipas (Matamoros)":59,
+        "Tamaulipas (Reynosa)":168,"Baja California (Tijuana)":86,"Baja California (Mexicali)":61,
+        "Baja California (Ensenada)":24,"Jalisco":181,"Yucatán":54,"Sonora (Hermosillo)":21,
+    }
+# df_venta_perdida_filtrada = ...  # tu DataFrame filtrado
+
+k1, k2 = kpis_basicos(df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3)
+name, uptd, covp = top_uptd_baja_cobertura(df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3, cov_thresh=85)
+
+c6, c7, c8 = st.columns([4,3,4])
+with c6:
+    st.metric("Artículos con UPTD > 0", f"{k1}")
+with c7:
+    st.metric("UPTD > 10 con 0% cobertura", f"{k2}")
+with c8:
+    delta_txt = f"UPTD {uptd:.2f} • Cobertura {covp:.0f}%" if pd.notna(uptd) else "—"
+    st.metric("Mayor UPTD con baja cobertura", name, delta=delta_txt)
