@@ -364,9 +364,6 @@ TOTALES_PLAZA = {
 
 
 
-# KPI 1 y 2
-k1, k2 = kpis_basicos(df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3)
-
 # KPI 3 (mayor UPTD con baja cobertura)
 name, uptd, covp = top_uptd_baja_cobertura(
     df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3, cov_thresh=85
