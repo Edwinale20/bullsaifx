@@ -182,7 +182,7 @@ def graficar_top_uptd(df_venta_perdida_filtrada):
     df["ARTICULO"] = df["ARTICULO"].astype(str)
     df["PLAZA"] = df["PLAZA"].astype(str)
     df["UPTD"] = pd.to_numeric(df["UPTD"], errors="coerce")
-    df["UPTD"] = df["UPTD"].fillna("No hay abasto")
+    df = df.dropna(subset=["UPTD"])
 
 
     # Top 10 por UPTD promedio global (artículo)
@@ -255,6 +255,21 @@ def cobertura_tabla(df):
 
 pivot = cobertura_tabla(df_venta_perdida_filtrada)
 
+pivot = base.pivot(index=ART, columns=PLZ, values="Cobertura %")
+
+# 👇 este paso cambia NaN -> "Sin abasto"
+pivot = pivot.fillna("Sin abasto")
+
+# Formato bonito
+def format_or_text(v):
+    if isinstance(v, str):   # ya es "Sin abasto"
+        return v
+    return f"{v:.0f}%"
+
+st.dataframe(
+    pivot.style.format(format_or_text).applymap(color),
+    use_container_width=True
+)
 def color(v):
     if pd.isna(v): return ""
     if v >= 95: return "background-color:#B9F6CA; text-align:center"
