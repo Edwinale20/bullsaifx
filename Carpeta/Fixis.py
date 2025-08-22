@@ -154,12 +154,16 @@ if proveedor != 'Ninguno':
 
 if articulo_busqueda:
     df_venta_perdida_filtrada = df_venta_perdida_filtrada[
+        df_venta_perdida_filtrada['ARTICULO'].str.contains(
+            articulo_busqueda, case=False, na=False
+        )
+    ]
+
+
+if articulo_busqueda:
+    df_venta_perdida_filtrada = df_venta_perdida_filtrada[
         df_venta_perdida_filtrada['ARTICULO'].str.contains(articulo_busqueda, case=False, na=False)
     
-df_venta_perdida_filtrada = df_venta_perdida_filtrada[
-    (df_venta_perdida_filtrada['UPTD'] >= umbral_uptd[0]) &
-    (df_venta_perdida_filtrada['UPTD'] <= umbral_uptd[1])
-]
 
 #----------------------------------------------------------------------------------------
 
