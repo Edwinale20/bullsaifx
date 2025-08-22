@@ -172,67 +172,62 @@ if fig_top_uptd:
 
 
 @st.cache_data
-def grafico_cobertura(df_venta_perdida_filtrada, tiendas_por_plaza: dict | None = None, orden_columnas: list[str] | None = None):
-    # -------- Config interna: totales por plaza (edítalo si quieres aquí mismo) --------
+def tabla_cobertura_semaforo(df_venta_perdida_filtrada, totales_por_plaza: dict | None = None, orden_columnas: list[str] | None = None):
+    # totales internos (edítalos si quieres aquí mismo)
     default_totales = {
         "Coahuila (Saltillo)":150, "Coahuila (Torreón)":95, "Morelos":120, "México":800,
         "Nuevo León":650, "Puebla":200, "Quintana Roo":160, "Tamaulipas (Matamoros)":90,
         "Tamaulipas (Reynosa)":130, "Baja California (Tijuana)":300, "Baja California (Mexicali)":110,
         "Baja California (Ensenada)":70, "Jalisco":400, "Yucatán":180, "Sonora (Hermosillo)":140
     }
-    totales_dict = tiendas_por_plaza or default_totales
+    totales = totales_por_plaza or default_totales
 
-    # -------- Validaciones mínimas --------
+    # columnas requeridas
     tienda_col = "NUM_TIENDA" if "NUM_TIENDA" in df_venta_perdida_filtrada.columns else ("TIENDA" if "TIENDA" in df_venta_perdida_filtrada.columns else None)
-    need = {"PLAZA","ARTICULO", tienda_col}
+    need = {"PLAZA","ARTICULO",tienda_col}
     if None in need or not need.issubset(df_venta_perdida_filtrada.columns):
         st.error("Se requieren columnas: PLAZA, ARTICULO y NUM_TIENDA/TIENDA.")
-        return
+        return None
 
     df = df_venta_perdida_filtrada[["PLAZA","ARTICULO",tienda_col]].astype(str).copy()
 
-    # -------- Numerador: tiendas únicas con el artículo por plaza/artículo --------
+    # numerador: tiendas únicas con el artículo por plaza/artículo
     num = df.groupby(["PLAZA","ARTICULO"])[tienda_col].nunique().reset_index(name="TIENDAS_CON_ART")
-
-    # -------- Denominador: totales por plaza --------
-    tot = pd.DataFrame({"PLAZA": list(totales_dict.keys()), "TIENDAS_TOTALES": list(totales_dict.values())})
+    # denominador: totales por plaza
+    tot = pd.DataFrame({"PLAZA": list(totales.keys()), "TIENDAS_TOTALES": list(totales.values())})
     base = num.merge(tot, on="PLAZA", how="left")
 
-    # Fallback: si alguna plaza quedó sin total, usa el máximo de tiendas únicas observadas en esa plaza
-    faltantes = base["PLAZA"][base["TIENDAS_TOTALES"].isna()].unique()
-    if len(faltantes):
-        obs = df.groupby("PLAZA")[tienda_col].nunique().rename("OBS_TOTALES").reset_index()
+    # fallback si falta total: usa máximo observado por plaza
+    if base["TIENDAS_TOTALES"].isna().any():
+        obs = df.groupby("PLAZA")[tienda_col].nunique().rename("OBS").reset_index()
         base = base.merge(obs, on="PLAZA", how="left")
-        base["TIENDAS_TOTALES"] = base["TIENDAS_TOTALES"].fillna(base["OBS_TOTALES"])
-        base = base.drop(columns=["OBS_TOTALES"])
+        base["TIENDAS_TOTALES"] = base["TIENDAS_TOTALES"].fillna(base["OBS"])
+        base = base.drop(columns="OBS")
 
-    # -------- % Cobertura --------
-    base["COBERTURA"] = (base["TIENDAS_CON_ART"] / base["TIENDAS_TOTALES"] * 100).clip(0,100)
+    # % cobertura
+    base["COBERTURA"] = (base["TIENDAS_CON_ART"] / base["TIENDAS_TOTALES"] * 100)
 
-    # -------- Pivot para heatmap --------
+    # pivote: filas=Artículo, columnas=Plaza, valores=% cobertura
     pv = base.pivot_table(index="ARTICULO", columns="PLAZA", values="COBERTURA", aggfunc="mean")
     if orden_columnas:
         pv = pv.reindex(columns=[c for c in orden_columnas if c in pv.columns])
 
-    # Texto por celda
-    text = pv.applymap(lambda v: "" if pd.isna(v) else f"{v:.0f}%").values
-    z = (pv/100.0).values  # 0–1
+    # estilos de semáforo
+    def color(v):
+        if pd.isna(v): return "background-color:white; color:#666;"
+        if v >= 95:    return "background-color:#B9F6CA;"   # verde
+        if v >= 85:    return "background-color:#FFF59D;"   # amarillo
+        return "background-color:#EF9A9A;"                  # rojo
 
-    # Umbrales fijos (rojo <85, amarillo 85–94, verde ≥95) y look de “cuadritos”
-    colorscale = [[0.00,"#EF9A9A"],[0.85,"#EF9A9A"],[0.85,"#FFF59D"],[0.95,"#FFF59D"],[0.95,"#B9F6CA"],[1.00,"#B9F6CA"]]
-    fig = go.Figure(go.Heatmap(
-        z=z, x=pv.columns.tolist(), y=pv.index.tolist(),
-        zmin=0, zmax=1, colorscale=colorscale, showscale=False,
-        text=text, texttemplate="%{text}", textfont=dict(size=11),
-        hovertemplate="<b>%{y}</b><br>%{x}<br>%{text}<extra></extra>",
-        xgap=1, ygap=1
-    ))
-    fig.update_layout(
-        title="📊 Cobertura por Artículo y Plaza",
-        xaxis_title="Plaza", yaxis_title="Artículo", yaxis=dict(autorange="reversed"),
-        margin=dict(l=10,r=10,t=50,b=10), height=650, plot_bgcolor="white", paper_bgcolor="white"
-    )
-    return fig
+    styler = (pv.style.format("{:.0f}%").applymap(color).set_properties(**{"text-align":"center"}))
+    return styler
+
+# USO (una línea para mostrar):
+styler = tabla_cobertura_semaforo(df_venta_perdida_filtrada)
+if styler is not None:
+    st.subheader("📋 Cobertura por Artículo y Plaza (Semáforo)")
+    st.dataframe(styler, use_container_width=True)
+
 
 fig = grafico_cobertura(df_venta_perdida_filtrada)  # todo interno; edita los totales dentro si quieres
 st.plotly_chart(fig, use_container_width=True)
