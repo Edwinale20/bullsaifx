@@ -259,7 +259,6 @@ def cobertura_tabla(df):
 
     return pivot, numeric
 
-# === USO ===
 # === USO CORRECTO ===
 pivot, numeric = cobertura_tabla(df_venta_perdida_filtrada)
 
