@@ -279,7 +279,7 @@ def color_sem(serie):
 styled = numeric.style.apply(color_sem, axis=0).format("{:.0f}%").na_rep("Sin abasto")
 
 
-pivot = cobertura_tabla(df_venta_perdida_filtrada)
+pivot, numeric = cobertura_tabla(df_venta_perdida_filtrada)
 st.dataframe(pivot, use_container_width=True)
 
 # === 1) Cobertura por artículo (global) ======================================
