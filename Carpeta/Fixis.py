@@ -171,6 +171,77 @@ if fig_top_uptd:
     st.plotly_chart(fig_top_uptd, use_container_width=True)
 
 
+@st.cache_data
+def tabla_coberturas(df_venta_perdida_filtrada, tiendas_por_plaza):
+    # Acepta dict {"PLAZA": total_tiendas} o DF con columnas ["PLAZA","TIENDAS_TOTALES"]
+    if isinstance(tiendas_por_plaza, dict):
+        totales = pd.Series(tiendas_por_plaza, name="TIENDAS_TOTALES")
+        totales.index.name = "PLAZA"
+        totales = totales.reset_index()
+    else:
+        totales = tiendas_por_plaza.rename(columns={tiendas_por_plaza.columns[0]:"PLAZA",
+                                                    tiendas_por_plaza.columns[1]:"TIENDAS_TOTALES"})
 
+    # Requisitos mínimos
+    req = {"PLAZA", "ARTICULO"}
+    # Usa NUM_TIENDA si existe, si no usa TIENDA como proxy
+    tienda_col = "NUM_TIENDA" if "NUM_TIENDA" in df_venta_perdida_filtrada.columns else "TIENDA"
+    req = req | {tienda_col}
+    if not req.issubset(df_venta_perdida_filtrada.columns):
+        faltan = sorted(req - set(df_venta_perdida_filtrada.columns))
+        st.error(f"Faltan columnas para cobertura: {faltan}")
+        return None
+
+    df = df_venta_perdida_filtrada.copy()
+    df[tienda_col] = df[tienda_col].astype(str)
+    df["PLAZA"] = df["PLAZA"].astype(str)
+    df["ARTICULO"] = df["ARTICULO"].astype(str)
+
+    # Numerador: tiendas únicas con el artículo por plaza/artículo
+    numerador = (
+        df.groupby(["PLAZA","ARTICULO"])[tienda_col]
+          .nunique()
+          .reset_index(name="TIENDAS_CON_ARTICULO")
+    )
+
+    # Denominador: total de tiendas por plaza
+    base = numerador.merge(totales, on="PLAZA", how="left")
+
+    # % Cobertura y semáforo
+    base["% Cobertura"] = (base["TIENDAS_CON_ARTICULO"] / base["TIENDAS_TOTALES"] * 100).round(1)
+
+    def semaforo(p):
+        if pd.isna(p): return "⚪ Sin dato"
+        if p >= 95:    return "🟢 Verde"
+        if p >= 85:    return "🟡 Amarillo"
+        return "🔴 Rojo"
+
+    base["Semáforo"] = base["% Cobertura"].apply(semaforo)
+
+    # Ordena de menor a mayor cobertura (para ver primero los problemas)
+    base = base.sort_values(["% Cobertura","PLAZA","ARTICULO"], ascending=[True, True, True])
+
+    # Formatos bonitos
+    base["% Cobertura"] = base["% Cobertura"].map(lambda x: f"{x:.1f}%" if pd.notna(x) else "")
+
+    # Reordena columnas
+    cols = ["PLAZA","ARTICULO","TIENDAS_CON_ARTICULO","TIENDAS_TOTALES","% Cobertura","Semáforo"]
+    return base[cols]
+
+# --- Uso:
+# Ejemplo de totales por plaza (puedes pasarlo como dict o DataFrame)
+tiendas_por_plaza = {
+    "Baja California (Tijuana)": 300, "México": 800, "Jalisco": 400,
+    "Coahuila (Saltillo)": 150, "Nuevo León": 650, "Puebla": 200,
+    "Morelos": 120, "Yucatán": 180, "Quintana Roo": 160, "Sonora (Hermosillo)": 140,
+    "Tamaulipas (Reynosa)": 130, "Tamaulipas (Matamoros)": 90,
+    "Baja California (Mexicali)": 110, "Baja California (Ensenada)": 70,
+    "Coahuila (Torreón)": 95,
+}
+
+tabla = tabla_coberturas(df_venta_perdida_filtrada, tiendas_por_plaza)
+if tabla is not None:
+    st.subheader("📊 Cobertura por Plaza y Artículo (Semáforo)")
+    st.dataframe(tabla, use_container_width=True)
 
 
