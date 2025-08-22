@@ -126,6 +126,9 @@ umbral_uptd = st.sidebar.slider(
     step=1
 )
 
+opciones_articulo = ['Ninguno'] + list(INV['ARTICULO'].unique())
+articulo = st.sidebar.selectbox('Seleccione el Artículo', opciones_articulo)
+
 
 # Filtrar por Proveedor
 if division == 'Ninguno':
@@ -153,6 +156,9 @@ df_venta_perdida_filtrada = df_venta_perdida_filtrada[
     (df_venta_perdida_filtrada['UPTD'] >= umbral_uptd[0]) &
     (df_venta_perdida_filtrada['UPTD'] <= umbral_uptd[1])
 ]
+
+if articulo != 'Ninguno':
+    df_venta_perdida_filtrada = df_venta_perdida_filtrada[df_venta_perdida_filtrada['ARTICULO'] == articulo]
 #----------------------------------------------------------------------------------------
 
 
