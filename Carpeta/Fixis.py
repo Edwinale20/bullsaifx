@@ -79,8 +79,8 @@ def Inventarios(archivo_zip):
 st.title("Inventarios")
 archivo_zip = st.file_uploader("Sube tu .zip con un CSV adentro", type=["zip"])
 
-if archivo is not None:
-    st.success(f"{archivo.name} cargado y procesado.")
+if archivo_zip is not None:
+    st.success(f"{archivo_zip.name} cargado y procesado.")
     # Aquí va tu lógica para leerlo
 else:
     st.info("Arrastra aquí tu archivo de inventarios")
