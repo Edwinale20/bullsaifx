@@ -55,7 +55,7 @@ def Inventarios(archivo_zip):
     map_plaza = {
         "100":"Tamaulipas (Reynosa)","110":"Tamaulipas (Matamoros)","200":"México","300":"Jalisco",
         "400":"Coahuila (Saltillo)","410":"Coahuila (Torreón)","500":"Nuevo León",
-        "600":"Baja California (Tijuana)","610":"Baja California (Mexicali)","620":"Baja California (Ensenada)",
+        "600":"Baja California (Tijuana)","610":"Baja California (Ensenada)","620":"Baja California (Mexicali)",
         "650":"Sonora (Hermosillo)","700":"Puebla","720":"Morelos","800":"Yucatán","890":"Quintana Roo",
     }
     if 'PLAZA' in combined_df.columns:
