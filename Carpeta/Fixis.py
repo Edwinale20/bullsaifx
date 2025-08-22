@@ -16,9 +16,9 @@ import io
 st.set_page_config(page_title="Reporte de Abasto Comercial", page_icon="🏪", layout="wide", initial_sidebar_state="expanded")
 st.title("📊 Reporte de Abasto comercial 🏪")
 st.markdown("✅ Arrastra aquí tu archivo de inventarios")
-st.markdown("✅ Esta app analiza rápidamente las coberturas de todo el catálogo de tu categoría")
-st.markdown("✅ Puedes hacer preguntas a la IA y ayudarte a identificar los productos en desabasto y con oportunidades. " \
-"Además de limpiar aquellos artículos con poco UPTD, con el fin de seguir el proceso de plan de choque")
+st.markdown("✅ Esta app analiza en menos de 30 segundos las coberturas de todo el catálogo de tu categoría")
+st.markdown("✅ Puedes identificar los productos en desabasto, y aquellos con oportunidades." \
+"Además de limpiar aquellos artículos con pocas UPTD, con el fin de seguir el plan APT")
 kpi_top = st.container()
 
 
