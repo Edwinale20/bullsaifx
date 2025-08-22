@@ -209,8 +209,7 @@ if fig_top_uptd:
 
 
 @st.cache_data
-@st.cache_data
-def cobertura_tabla_y_grafica(df):
+def cobertura_tabla(df):
     TOTALES = {
         "Coahuila (Saltillo)":85,"Coahuila (Torreón)":54,"Morelos":12,"México":390,
         "Nuevo León":751,"Puebla":22,"Quintana Roo":79,"Tamaulipas (Matamoros)":59,
@@ -220,34 +219,28 @@ def cobertura_tabla_y_grafica(df):
     ART = "ARTICULO" if "ARTICULO" in df.columns else "Artículo"
     PLZ = "PLAZA" if "PLAZA" in df.columns else "Plaza"
     TND = "NUM_TIENDA" if "NUM_TIENDA" in df.columns else ("TIENDA" if "TIENDA" in df.columns else "Tienda")
-    MRD = "MERCADO" if "MERCADO" in df.columns else ("Mercado" if "Mercado" in df.columns else None)
 
-    g = (df[[ART,PLZ,TND]].astype(str).groupby([ART,PLZ])[TND].nunique().reset_index(name="Tiendas_con_art"))
+    g = (df[[ART,PLZ,TND]].astype(str)
+         .groupby([ART,PLZ])[TND]
+         .nunique()
+         .reset_index(name="Tiendas_con_art"))
+
     tot = pd.DataFrame({PLZ:list(TOTALES.keys()), "Tiendas_totales":list(TOTALES.values())})
     base = g.merge(tot, on=PLZ, how="left")
+
     if base["Tiendas_totales"].isna().any():
         obs = df.groupby(PLZ)[TND].nunique().rename("obs").reset_index()
         base = base.merge(obs, on=PLZ, how="left")
         base["Tiendas_totales"] = base["Tiendas_totales"].fillna(base["obs"])
+
     base["Cobertura %"] = (base["Tiendas_con_art"] / base["Tiendas_totales"] * 100).clip(0,100)
 
-    pivot = base.pivot(index=ART, columns=PLZ, values="Cobertura %")  # <- DataFrame (sí se cachea)
+    # Solo pivot artículo vs plaza
+    pivot = base.pivot(index=ART, columns=PLZ, values="Cobertura %")
+    return pivot
 
-    if MRD:
-        m = df[[PLZ,MRD]].drop_duplicates()
-        b2 = base.merge(m, on=PLZ, how="left")
-        res = b2.groupby(MRD)["Cobertura %"].mean().reset_index(); xlab = MRD
-    else:
-        res = base.groupby(PLZ)["Cobertura %"].mean().reset_index(); xlab = PLZ
 
-    fig = px.bar(res.sort_values("Cobertura %", ascending=False), x=xlab, y="Cobertura %",
-                 color="Cobertura %", color_continuous_scale=["#EF9A9A","#FFF59D","#B9F6CA"],
-                 range_color=(0,100), title="Cobertura promedio por " + xlab)
-    fig.update_layout(showlegend=False, yaxis_title="Cobertura (%)", xaxis_tickangle=-30)
-
-    return pivot, fig
-
-pivot, fig = cobertura_tabla_y_grafica(df_venta_perdida_filtrada)
+pivot = cobertura_tabla(df_venta_perdida_filtrada)
 
 def color(v):
     if pd.isna(v): return ""
@@ -256,7 +249,6 @@ def color(v):
     return "background-color:#EF9A9A; text-align:center"
 
 st.dataframe(pivot.style.format("{:.0f}%").applymap(color), use_container_width=True)
-st.plotly_chart(fig, use_container_width=True)
 
 
 # === 1) Cobertura por artículo (global) ======================================
