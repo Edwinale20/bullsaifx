@@ -95,7 +95,7 @@ INV = Inventarios(archivo_zip)  # <- como querías
 if INV is None:
     st.stop()
 
-st.success("✅Los inventarios de tu categoría fueron cargados con éxito.")
+st.success("✅ Los inventarios de tu categoría fueron cargados con éxito.")
 
 #----------------------------------------------------------------------------------------
 
@@ -282,6 +282,9 @@ styled = numeric.style.apply(color_sem, axis=0).format("{:.0f}%", na_rep="Sin ab
 
 # 👇 Mostrar con colores en Streamlit
 st.markdown(styled.to_html(), unsafe_allow_html=True)
+
+
+
 # === 1) Cobertura por artículo (global) ======================================
 def cobertura_por_articulo(df, totales_por_plaza: dict, umbral_inv: int = 3):
     pick = lambda names: next((c for c in names if c in df.columns), None)
