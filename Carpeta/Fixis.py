@@ -17,7 +17,8 @@ st.set_page_config(page_title="Reporte de Abasto y Clientes Comercial", page_ico
 st.title("📊 Reporte de Abasto y Clientes comercial 🏪")
 st.markdown("✅ Arrastra aquí tu archivo de inventarios")
 st.markdown("✅ Esta app analiza en menos de 30 segundos las coberturas de todo el catálogo de tu categoría. Te ahorramos hasta 5 horas de trabajo semanales!")
-st.markdown("✅ Puedes identificar los productos en desabasto, y aquellos con oportunidades." "Además de limpiar aquellos artículos con pocas UPTD, con el fin de seguir el plan APT")
+st.markdown("✅ Puedes identificar los productos en desabasto, y aquellos con oportunidades." "Además identificar pocas UPTD, con el fin de seguir el plan APT")
+st.markdown("🔐 Esta app no guarda datos en la nube o en caché. Si deseas reiniciar la página solo da refresh a la página")
 kpi_top = st.container()
 
 
