@@ -378,8 +378,8 @@ k3, lista_k3 = kpis_altos(
 with kpi_top:
     c7, c8 = st.columns([3, 4])
     with c7:
-        st.metric("✅ UPTD > 5 y Cobertura > 85%", f"{k3}")
+        st.metric("✅ Artículos con UPTD => 5 y Cobertura => 85%", f"{k3}")
         st.write(", ".join(lista_k3) if lista_k3 else "—")
     with c8:
         delta_txt = f"UPTD {uptd:.2f} • Cobertura {covp:.0f}%" if pd.notna(uptd) else "—"
-        st.metric("⚠️ Mayor UPTD con baja cobertura", name, delta=delta_txt)
+        st.metric("⚠️ Artículos con mayor UPTD, con baja cobertura", name, delta=delta_txt)
