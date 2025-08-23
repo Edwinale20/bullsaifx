@@ -21,7 +21,7 @@ st.markdown("✅ Puedes identificar los productos en desabasto, y aquellos con o
 st.markdown("🔐 Esta app no guarda datos en la nube o en caché. Si deseas reiniciar todo solo da refresh a la página")
 kpi_top = st.container()
 
-
+ 
 #----------------------------------------------------------------------------------------   
 
 # --- TU FUNCIÓN: Déjala idéntica ---
