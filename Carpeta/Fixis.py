@@ -107,7 +107,7 @@ st.sidebar.title("🔠  Filtros")
 opciones_division = ['Ninguno'] + list(INV['Division'].unique())
 division = st.sidebar.selectbox('Seleccione la División', opciones_division)
 
-opciones_pareto = ['Todos', 'Pareto 80/20']
+opciones_pareto = ['Todos', 'Infaltables 80/20']
 filtro_pareto = st.sidebar.selectbox('Filtrar artículos', opciones_pareto)
 
 opciones_plaza = ['Ninguno'] + list(INV['PLAZA'].unique())
@@ -142,11 +142,11 @@ else:
     df_venta_perdida_filtrada = INV[INV['Division'] == division]
 
 # Filtrar por Infaltables
-if filtro_pareto == 'Pareto 80/20':
+if filtro_pareto == 'Infaltables 80/20':
     top_pareto = (
-        df_venta_perdida_filtrada.groupby("ARTICULO", as_index=False)["VPTD"].sum()
-        .sort_values("VPTD", ascending=False)
-        .assign(cum_pct=lambda d: d["VPTD"].cumsum() / d["VPTD"].sum() * 100)
+        df_venta_perdida_filtrada.groupby("ARTICULO", as_index=False)["Venta PTD"].sum()
+        .sort_values("Venta PTD", ascending=False)
+        .assign(cum_pct=lambda d: d["Venta PTD"].cumsum() / d["Venta PTD"].sum() * 100)
         .query("cum_pct <= 80")["ARTICULO"]
     )
     df_venta_perdida_filtrada = df_venta_perdida_filtrada[
