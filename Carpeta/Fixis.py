@@ -258,7 +258,9 @@ def cobertura_tabla(df):
 
     tot = pd.DataFrame({PLZ:list(TOTALES.keys()), "Tiendas_totales":list(TOTALES.values())})
     base = g.merge(tot, on=PLZ, how="left")
+    title="Venta Perdida semanal por División 🏴🏳️"
 
+   
     if base["Tiendas_totales"].isna().any():
         obs = df.groupby(PLZ)[TND].nunique().rename("obs").reset_index()
         base = base.merge(obs, on=PLZ, how="left")
