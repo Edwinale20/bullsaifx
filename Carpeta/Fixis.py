@@ -112,13 +112,6 @@ opciones_division = ['Ninguno'] + list(INV['Division'].unique())
 division = st.sidebar.selectbox('Seleccione la División', opciones_division)
 
 
-ranking = (
-    df_venta_perdida_filtrada.groupby("ARTICULO", as_index=False)["VPTD"]
-    .sum()
-    .sort_values("VPTD", ascending=False)
-)
-ranking["%_acum"] = ranking["VPTD"].cumsum() / ranking["VPTD"].sum() * 100
-top_pareto = ranking[ranking["%_acum"] <= 80]["ARTICULO"].tolist()
 
 opciones_pareto = ['Todos', 'Pareto 80/20']
 filtro_pareto = st.sidebar.selectbox('Filtrar artículos', opciones_pareto)
@@ -148,6 +141,13 @@ umbral_uptd = st.sidebar.slider(
 
 
 # Filtrar por 80/20
+ranking = (
+    df_venta_perdida_filtrada.groupby("ARTICULO", as_index=False)["VPTD"]
+    .sum()
+    .sort_values("VPTD", ascending=False)
+)
+ranking["%_acum"] = ranking["VPTD"].cumsum() / ranking["VPTD"].sum() * 100
+top_pareto = ranking[ranking["%_acum"] <= 80]["ARTICULO"].tolist()
 
 
 
