@@ -112,7 +112,6 @@ opciones_division = ['Ninguno'] + list(INV['Division'].unique())
 division = st.sidebar.selectbox('Seleccione la División', opciones_division)
 
 
-
 opciones_pareto = ['Todos', 'Pareto 80/20']
 filtro_pareto = st.sidebar.selectbox('Filtrar artículos', opciones_pareto)
 
@@ -140,16 +139,6 @@ umbral_uptd = st.sidebar.slider(
 )
 
 
-# Filtrar por 80/20
-ranking = (
-    df_venta_perdida_filtrada.groupby("ARTICULO", as_index=False)["VPTD"]
-    .sum()
-    .sort_values("VPTD", ascending=False)
-)
-ranking["%_acum"] = ranking["VPTD"].cumsum() / ranking["VPTD"].sum() * 100
-top_pareto = ranking[ranking["%_acum"] <= 80]["ARTICULO"].tolist()
-
-
 
 # Filtrar por Proveedor
 if division == 'Ninguno':
@@ -159,9 +148,13 @@ else:
 
 # Filtrar por Infaltables
 if filtro_pareto == 'Pareto 80/20':
-    df_venta_perdida_filtrada = df_venta_perdida_filtrada[
-        df_venta_perdida_filtrada['ARTICULO'].isin(top_pareto)
-    ]
+    top_pareto = (
+        df_venta_perdida_filtrada.groupby("ARTICULO", as_index=False)["VPTD"].sum()
+        .sort_values("VPTD", ascending=False)
+        .assign(cum_pct=lambda d: d["VPTD"].cumsum() / d["VPTD"].sum() * 100)
+        .query("cum_pct <= 80")["ARTICULO"]
+    )
+    df_venta_perdida_filtrada = df_venta_perdida_filtrada[df_venta_perdida_filtrada["ARTICULO"].isin(top_pareto)]
 
 
 # Filtrar por Plaza
