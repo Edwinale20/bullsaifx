@@ -241,7 +241,6 @@ if fig_top_uptd:
 #----------------------------------------------------------------------------------------
 @st.cache_data
 def cobertura_tabla(df):
-    title="Venta Perdida semanal por División 🏴🏳️"
 
     TOTALES = {
         "Coahuila (Saltillo)":85,"Coahuila (Torreón)":54,"Morelos":12,"México":390,
@@ -291,7 +290,7 @@ def color_sem(serie):
             colors.append("background-color: lightgray; color: black;")
         elif v < 40:
             colors.append("background-color: #ff4d4d; color: white;")  # Rojo
-        elif v < 70:
+        elif v < 90:
             colors.append("background-color: #ffd633; color: black;")  # Amarillo
         else:
             colors.append("background-color: #5cd65c; color: black;")  # Verde
