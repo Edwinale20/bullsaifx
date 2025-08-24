@@ -241,6 +241,8 @@ if fig_top_uptd:
 #----------------------------------------------------------------------------------------
 @st.cache_data
 def cobertura_tabla(df):
+    title="Venta Perdida semanal por División 🏴🏳️"
+
     TOTALES = {
         "Coahuila (Saltillo)":85,"Coahuila (Torreón)":54,"Morelos":12,"México":390,
         "Nuevo León":751,"Puebla":22,"Quintana Roo":79,"Tamaulipas (Matamoros)":59,
@@ -258,7 +260,6 @@ def cobertura_tabla(df):
 
     tot = pd.DataFrame({PLZ:list(TOTALES.keys()), "Tiendas_totales":list(TOTALES.values())})
     base = g.merge(tot, on=PLZ, how="left")
-    title="Venta Perdida semanal por División 🏴🏳️"
 
    
     if base["Tiendas_totales"].isna().any():
