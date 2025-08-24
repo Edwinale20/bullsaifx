@@ -101,16 +101,13 @@ st.success("✅ Los inventarios de tu categoría fueron cargados con éxito.")
 
 # === Filtro 80/20 Pareto ===
 # Calcular ranking por VPTD total
-df_vptd = df_venta_perdida_filtrada.copy()
-df_vptd["VPTD"] = pd.to_numeric(df_vptd["VPTD"], errors="coerce").fillna(0)
 ranking = (
-    df_vptd.groupby("ARTICULO", as_index=False)["VPTD"]
+    df_venta_perdida_filtrada.groupby("ARTICULO", as_index=False)["VPTD"]
     .sum()
     .sort_values("VPTD", ascending=False)
 )
 ranking["%_acum"] = ranking["VPTD"].cumsum() / ranking["VPTD"].sum() * 100
 top_pareto = ranking[ranking["%_acum"] <= 80]["ARTICULO"].tolist()
-
 
 
 
@@ -163,6 +160,7 @@ if filtro_pareto == 'Pareto 80/20':
     df_venta_perdida_filtrada = df_venta_perdida_filtrada[
         df_venta_perdida_filtrada['ARTICULO'].isin(top_pareto)
     ]
+
 
 # Filtrar por Plaza
 if plaza != 'Ninguno':
