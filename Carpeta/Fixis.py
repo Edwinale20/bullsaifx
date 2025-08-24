@@ -101,13 +101,6 @@ st.success("✅ Los inventarios de tu categoría fueron cargados con éxito.")
 
 # === Filtro 80/20 Pareto ===
 # Calcular ranking por VPTD total
-ranking = (
-    df_venta_perdida_filtrada.groupby("ARTICULO", as_index=False)["VPTD"]
-    .sum()
-    .sort_values("VPTD", ascending=False)
-)
-ranking["%_acum"] = ranking["VPTD"].cumsum() / ranking["VPTD"].sum() * 100
-top_pareto = ranking[ranking["%_acum"] <= 80]["ARTICULO"].tolist()
 
 
 
@@ -117,6 +110,15 @@ st.sidebar.title("🔠  Filtros")
 
 opciones_division = ['Ninguno'] + list(INV['Division'].unique())
 division = st.sidebar.selectbox('Seleccione la División', opciones_division)
+
+
+ranking = (
+    df_venta_perdida_filtrada.groupby("ARTICULO", as_index=False)["VPTD"]
+    .sum()
+    .sort_values("VPTD", ascending=False)
+)
+ranking["%_acum"] = ranking["VPTD"].cumsum() / ranking["VPTD"].sum() * 100
+top_pareto = ranking[ranking["%_acum"] <= 80]["ARTICULO"].tolist()
 
 opciones_pareto = ['Todos', 'Pareto 80/20']
 filtro_pareto = st.sidebar.selectbox('Filtrar artículos', opciones_pareto)
