@@ -107,8 +107,8 @@ st.sidebar.title("🔠  Filtros")
 opciones_division = ['Ninguno'] + list(INV['Division'].unique())
 division = st.sidebar.selectbox('Seleccione la División', opciones_division)
 
-opciones_pareto = ['Todos', 'Infaltables 80/20']
-filtro_pareto = st.sidebar.selectbox('Filtrar artículos', opciones_pareto)
+opciones_pareto = ['Total artículos', 'Infaltables 80/20']
+filtro_pareto = st.sidebar.selectbox('Filtrar Infaltables 80/20', opciones_pareto)
 
 opciones_plaza = ['Ninguno'] + list(INV['PLAZA'].unique())
 plaza = st.sidebar.selectbox('Seleccione la Plaza', opciones_plaza)
