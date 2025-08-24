@@ -99,10 +99,6 @@ st.success("✅ Los inventarios de tu categoría fueron cargados con éxito.")
 
 #----------------------------------------------------------------------------------------
 
-# === Filtro 80/20 Pareto ===
-# Calcular ranking por VPTD total
-
-
 
 st.sidebar.image("https://raw.githubusercontent.com/Edwinale20/bullsaifx/main/Carpeta/el-logo.png", width=170)
 st.sidebar.title("🔠  Filtros")
@@ -110,7 +106,6 @@ st.sidebar.title("🔠  Filtros")
 
 opciones_division = ['Ninguno'] + list(INV['Division'].unique())
 division = st.sidebar.selectbox('Seleccione la División', opciones_division)
-
 
 opciones_pareto = ['Todos', 'Pareto 80/20']
 filtro_pareto = st.sidebar.selectbox('Filtrar artículos', opciones_pareto)
@@ -154,7 +149,9 @@ if filtro_pareto == 'Pareto 80/20':
         .assign(cum_pct=lambda d: d["VPTD"].cumsum() / d["VPTD"].sum() * 100)
         .query("cum_pct <= 80")["ARTICULO"]
     )
-    df_venta_perdida_filtrada = df_venta_perdida_filtrada[df_venta_perdida_filtrada["ARTICULO"].isin(top_pareto)]
+    df_venta_perdida_filtrada = df_venta_perdida_filtrada[
+        df_venta_perdida_filtrada["ARTICULO"].isin(top_pareto)
+    ]
 
 
 # Filtrar por Plaza
