@@ -279,6 +279,9 @@ def cobertura_tabla(df):
 
     return pivot, numeric
 
+figura1 = cobertura_tabla(df)
+
+
 # === USO CORRECTO ===
 pivot, numeric = cobertura_tabla(df_venta_perdida_filtrada)
 
@@ -384,7 +387,11 @@ TOTALES_PLAZA = {
     "Baja California (Ensenada)":24, "Jalisco":181, "Yucatán":54, "Sonora (Hermosillo)":21,
 }
 
+c1 = st.columns([4, 3, 4])
 
+# Columna 1: Gráfica de Comparación de Venta Perdida y Venta Neta por Proveedor
+with c1:
+    st.plotly_chart(figura1, use_container_width=True)
 
 
 # KPI 3 (mayor UPTD con baja cobertura)
