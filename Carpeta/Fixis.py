@@ -396,14 +396,13 @@ def cobertura_por_division(df, totales_por_plaza: dict, umbral_inv: int = 3):
     PLZ = pick(["PLAZA","Plaza"])
     TND = pick(["NUM_TIENDA","TIENDA","Tienda"])
     DIV = pick(["DIVISION","Division"])
-
     INV = pick(["Unidades Inventario","UDS_INVENTARIO","Unidades","INVENTARIO_UNIDADES"])
 
     d = df[[ART,PLZ,TND,DIV] + ([INV] if INV else [])].copy().astype({PLZ:str, TND:str, ART:str, DIV:str})
     d["_pres"] = (pd.to_numeric(d[INV], errors="coerce").fillna(0) > umbral_inv) if INV else True
     pres = d.groupby([DIV,ART,PLZ,TND], as_index=False)["_pres"].max()
 
-    # número de tiendas por artículo dentro de cada división
+    # Número de tiendas por artículo dentro de cada división
     num = pres.groupby([DIV,ART,PLZ])["_pres"].sum().reset_index(name="Tiendas_con_art")
     tot = pd.DataFrame({PLZ:list(totales_por_plaza.keys()), "Tiendas_totales":list(totales_por_plaza.values())})
     base = num.merge(tot, on=PLZ, how="left")
@@ -413,29 +412,33 @@ def cobertura_por_division(df, totales_por_plaza: dict, umbral_inv: int = 3):
     # 🔑 Cobertura promedio por división (promedio de artículos, no suma global)
     resumen = base.groupby(DIV)["Cobertura_%"].mean().reset_index()
 
+    # renombramos para vista
+    resumen = resumen.rename(columns={"Cobertura_%":"Cobertura (%)"})
+
     return resumen
 
 tabla_div = cobertura_por_division(df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3)
 
-
+# 🎨 Estilo semáforo bonito
 def color(val):
     try:
         v = float(val)
     except:
-        return "background-color: lightgray; color: black;"
+        return "background-color: lightgray; color: black; text-align:center;"
     if v >= 90:
-        return "background-color: #B9F6CA; text-align:center"
+        return "background-color: #B9F6CA; text-align:center; font-weight:bold;"
     if v >= 80:
-        return "background-color: #FFF59D; text-align:center"
-    return "background-color: #EF9A9A; text-align:center"
+        return "background-color: #FFF59D; text-align:center; font-weight:bold;"
+    return "background-color: #EF9A9A; text-align:center; font-weight:bold;"
 
-st.dataframe(
+styled = (
     tabla_div.style
-        .format({"Cobertura_%": "{:.0f}%"})  # 👈 usa el nombre real de la columna
-        .applymap(color, subset=["Cobertura_%"]),
-    use_container_width=True
+        .format({"Cobertura (%)": "{:.0f}%"})
+        .applymap(color, subset=["Cobertura (%)"])
+        .set_properties(**{"text-align": "center", "border": "1px solid #ddd", "padding": "4px"})
 )
 
+st.dataframe(styled, use_container_width=True)
 # KPI 3 (mayor UPTD con baja cobertura)
 name, uptd, covp = top_uptd_baja_cobertura(
     df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3, cov_thresh=85
