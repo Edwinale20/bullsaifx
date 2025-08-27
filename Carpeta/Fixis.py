@@ -431,8 +431,8 @@ def color(val):
 
 st.dataframe(
     tabla_div.style
-        .format({"Cobertura_%": "{:.0f}%"})   # ✅ solo formatea la columna numérica
-        .applymap(color, subset=["Cobertura %"]),
+        .format({"Cobertura_%": "{:.0f}%"})  # 👈 usa el nombre real de la columna
+        .applymap(color, subset=["Cobertura_%"]),
     use_container_width=True
 )
 
