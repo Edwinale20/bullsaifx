@@ -423,11 +423,12 @@ def cobertura_por_division(df, totales_por_plaza: dict, umbral_inv: int = 3):
 
 tabla_div = cobertura_por_division(df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3)
 
+
 def color(val):
     try:
-        v = float(val)  # convierte a número
+        v = float(val)
     except:
-        return "background-color: lightgray; color: black;"  # por si hay NaN u otro valor raro
+        return "background-color: lightgray; color: black;"
     if v >= 90:
         return "background-color: #B9F6CA; text-align:center"
     if v >= 80:
@@ -436,11 +437,10 @@ def color(val):
 
 st.dataframe(
     tabla_div.style
-        .format("{:.0f}%")
+        .format({"Cobertura %": "{:.0f}%"})   # ✅ solo formatea la columna numérica
         .applymap(color, subset=["Cobertura %"]),
     use_container_width=True
 )
-
 
 # KPI 3 (mayor UPTD con baja cobertura)
 name, uptd, covp = top_uptd_baja_cobertura(
