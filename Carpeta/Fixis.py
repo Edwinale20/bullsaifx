@@ -433,7 +433,7 @@ def color(val):
 
 styled = (
     tabla_div.style
-        .format({"Cobertura (%)": "{:.0f}%"})
+        .format({"Cobertura (%)": "{:.1f}%"})
         .applymap(color, subset=["Cobertura (%)"])
         .set_properties(**{"text-align": "center", "border": "1px solid #ddd", "padding": "4px"})
 )
