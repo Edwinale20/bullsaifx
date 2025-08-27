@@ -390,48 +390,48 @@ TOTALES_PLAZA = {
 
 
 @st.cache_data
-def grafico_cobertura_division(df, totales_por_plaza: dict, umbral_inv: int = 3):
+def cobertura_por_division(df, totales_por_plaza: dict, umbral_inv: int = 3):
     """
-    Gráfica: % Cobertura por División (global, sin detalle de artículos).
+    Tabla tipo semáforo: Cobertura % por División
     """
-    # --- Columnas necesarias ---
+    # --- Columnas ---
     pick = lambda names: next((c for c in df.columns if c in names), None)
+    DIV = pick(["DIVISION","Division","division"])
     PLZ = pick(["PLAZA","Plaza"])
     TND = pick(["NUM_TIENDA","TIENDA","Tienda"])
-    DIV = pick(["DIVISION","Division","division"])
     INV = pick(["Unidades Inventario","UDS_INVENTARIO","Unidades","INVENTARIO_UNIDADES"])
 
-    if not all([PLZ,TND,DIV]):
+    if not all([DIV,PLZ,TND]):
         st.error("Faltan columnas para calcular cobertura por División")
         return None
 
-    # --- Presencia por tienda ---
-    d = df[[PLZ,TND,DIV] + ([INV] if INV else [])].copy()
+    # --- Determinar presencia ---
+    d = df[[DIV,PLZ,TND] + ([INV] if INV else [])].copy().astype({PLZ:str, TND:str})
     d["_pres"] = (pd.to_numeric(d[INV], errors="coerce").fillna(0) > umbral_inv) if INV else True
     pres = d.groupby([DIV,PLZ,TND], as_index=False)["_pres"].max()
 
-    # --- Tiendas con artículo vs totales ---
-    num = pres.groupby(DIV)["_pres"].sum().reset_index(name="Tiendas_con_art")
-    tot = df[[PLZ,DIV,TND]].drop_duplicates().groupby(DIV)[TND].nunique().reset_index(name="Tiendas_totales")
+    # --- Calcular tiendas con art / totales ---
+    num = pres.groupby([DIV,PLZ])["_pres"].sum().reset_index(name="Tiendas_con_art")
+    tot = df[[DIV,PLZ,TND]].drop_duplicates().groupby([DIV,PLZ])[TND].nunique().reset_index(name="Tiendas_totales")
+    base = num.merge(tot, on=[DIV,PLZ], how="left")
+    base["Cobertura %"] = (base["Tiendas_con_art"]/base["Tiendas_totales"]*100).clip(0,100)
 
-    base = num.merge(tot, on=DIV, how="left")
-    base["Cobertura_%"] = (base["Tiendas_con_art"]/base["Tiendas_totales"]*100).clip(0,100)
+    # --- Pivot: División vs Plaza ---
+    pivot = base.pivot(index=DIV, columns=PLZ, values="Cobertura %").round(0)
 
-    # --- Gráfica ---
-    fig = px.bar(
-        base.sort_values("Cobertura_%", ascending=False),
-        x=DIV, y="Cobertura_%", text="Cobertura_%",
-        color="Cobertura_%", color_continuous_scale=["#EF9A9A","#FFF59D","#B9F6CA"],
-        title="📊 % de Cobertura por División"
-    )
-    fig.update_traces(texttemplate="%{text:.0f}%", textposition="outside")
-    fig.update_layout(yaxis_title="Cobertura (%)", xaxis_tickangle=-25, showlegend=False)
+    # --- Semáforo ---
+    def color(val):
+        if pd.isna(val): return "background-color: lightgray; color: black;"
+        if val >= 90:    return "background-color: #B9F6CA; text-align:center"
+        if val >= 80:    return "background-color: #FFF59D; text-align:center"
+        return "background-color: #EF9A9A; text-align:center"
 
-    return fig
+    styled = pivot.style.format("{:.0f}%").applymap(color)
+    return styled
 
-fig_cov_div = grafico_cobertura_division(df_venta_perdida_filtrada, TOTALES_PLAZA)
-if fig_cov_div:
-    st.plotly_chart(fig_cov_div, use_container_width=True)
+tabla_div = cobertura_por_division(df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3)
+if tabla_div is not None:
+    st.dataframe(tabla_div, use_container_width=True)
 
 
 # KPI 3 (mayor UPTD con baja cobertura)
