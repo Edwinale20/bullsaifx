@@ -392,7 +392,7 @@ TOTALES_PLAZA = {
 @st.cache_data
 def cobertura_por_division(df, totales_por_plaza: dict, umbral_inv: int = 3):
     """
-    Tabla tipo semáforo: Cobertura % por División
+    Calcula Cobertura % por División y Plaza (sin estilo).
     """
     # --- Columnas ---
     pick = lambda names: next((c for c in df.columns if c in names), None)
@@ -401,37 +401,27 @@ def cobertura_por_division(df, totales_por_plaza: dict, umbral_inv: int = 3):
     TND = pick(["NUM_TIENDA","TIENDA","Tienda"])
     INV = pick(["Unidades Inventario","UDS_INVENTARIO","Unidades","INVENTARIO_UNIDADES"])
 
-    if not all([DIV,PLZ,TND]):
-        st.error("Faltan columnas para calcular cobertura por División")
-        return None
-
-    # --- Determinar presencia ---
     d = df[[DIV,PLZ,TND] + ([INV] if INV else [])].copy().astype({PLZ:str, TND:str})
     d["_pres"] = (pd.to_numeric(d[INV], errors="coerce").fillna(0) > umbral_inv) if INV else True
     pres = d.groupby([DIV,PLZ,TND], as_index=False)["_pres"].max()
 
-    # --- Calcular tiendas con art / totales ---
     num = pres.groupby([DIV,PLZ])["_pres"].sum().reset_index(name="Tiendas_con_art")
     tot = df[[DIV,PLZ,TND]].drop_duplicates().groupby([DIV,PLZ])[TND].nunique().reset_index(name="Tiendas_totales")
     base = num.merge(tot, on=[DIV,PLZ], how="left")
     base["Cobertura %"] = (base["Tiendas_con_art"]/base["Tiendas_totales"]*100).clip(0,100)
 
-    # --- Pivot: División vs Plaza ---
     pivot = base.pivot(index=DIV, columns=PLZ, values="Cobertura %").round(0)
-
-    # --- Semáforo ---
-    def color(val):
-        if pd.isna(val): return "background-color: lightgray; color: black;"
-        if val >= 90:    return "background-color: #B9F6CA; text-align:center"
-        if val >= 80:    return "background-color: #FFF59D; text-align:center"
-        return "background-color: #EF9A9A; text-align:center"
-
-    styled = pivot.style.format("{:.0f}%").applymap(color)
-    return styled
+    return pivot
 
 tabla_div = cobertura_por_division(df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3)
-if tabla_div is not None:
-    st.dataframe(tabla_div, use_container_width=True)
+
+def color(val):
+    if pd.isna(val): return "background-color: lightgray; color: black;"
+    if val >= 90:    return "background-color: #B9F6CA; text-align:center"
+    if val >= 80:    return "background-color: #FFF59D; text-align:center"
+    return "background-color: #EF9A9A; text-align:center"
+
+st.dataframe(tabla_div.style.format("{:.0f}%").applymap(color), use_container_width=True)
 
 
 # KPI 3 (mayor UPTD con baja cobertura)
