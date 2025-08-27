@@ -429,6 +429,9 @@ def grafico_cobertura_division(df, totales_por_plaza: dict, umbral_inv: int = 3)
 
     return fig
 
+fig_cov_div = grafico_cobertura_division(df_venta_perdida_filtrada, TOTALES_PLAZA)
+if fig_cov_div:
+    st.plotly_chart(fig_cov_div, use_container_width=True)
 
 
 # KPI 3 (mayor UPTD con baja cobertura)
