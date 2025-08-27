@@ -424,12 +424,22 @@ def cobertura_por_division(df, totales_por_plaza: dict, umbral_inv: int = 3):
 tabla_div = cobertura_por_division(df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3)
 
 def color(val):
-    if pd.isna(val): return "background-color: lightgray; color: black;"
-    if val >= 90:    return "background-color: #B9F6CA; text-align:center"
-    if val >= 80:    return "background-color: #FFF59D; text-align:center"
+    try:
+        v = float(val)  # convierte a número
+    except:
+        return "background-color: lightgray; color: black;"  # por si hay NaN u otro valor raro
+    if v >= 90:
+        return "background-color: #B9F6CA; text-align:center"
+    if v >= 80:
+        return "background-color: #FFF59D; text-align:center"
     return "background-color: #EF9A9A; text-align:center"
 
-st.dataframe(tabla_div.style.format("{:.0f}%").applymap(color), use_container_width=True)
+st.dataframe(
+    tabla_div.style
+        .format("{:.0f}%")
+        .applymap(color, subset=["Cobertura %"]),
+    use_container_width=True
+)
 
 
 # KPI 3 (mayor UPTD con baja cobertura)
