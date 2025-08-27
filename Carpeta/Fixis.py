@@ -392,7 +392,7 @@ TOTALES_PLAZA = {
 @st.cache_data
 def cobertura_por_division(df, totales_por_plaza: dict, umbral_inv: int = 3):
     """
-    Calcula Cobertura % por División y Plaza (sin estilo).
+    Calcula Cobertura % global por División (sin plazas).
     """
     # --- Columnas ---
     pick = lambda names: next((c for c in df.columns if c in names), None)
@@ -401,17 +401,25 @@ def cobertura_por_division(df, totales_por_plaza: dict, umbral_inv: int = 3):
     TND = pick(["NUM_TIENDA","TIENDA","Tienda"])
     INV = pick(["Unidades Inventario","UDS_INVENTARIO","Unidades","INVENTARIO_UNIDADES"])
 
-    d = df[[DIV,PLZ,TND] + ([INV] if INV else [])].copy().astype({PLZ:str, TND:str})
+    if DIV is None or PLZ is None or TND is None:
+        return pd.DataFrame()
+
+    d = df[[DIV,PLZ,TND] + ([INV] if INV else [])].copy().astype({PLZ:str, TND:str, DIV:str})
     d["_pres"] = (pd.to_numeric(d[INV], errors="coerce").fillna(0) > umbral_inv) if INV else True
     pres = d.groupby([DIV,PLZ,TND], as_index=False)["_pres"].max()
 
+    # Tiendas con artículo
     num = pres.groupby([DIV,PLZ])["_pres"].sum().reset_index(name="Tiendas_con_art")
+
+    # Totales por plaza
     tot = df[[DIV,PLZ,TND]].drop_duplicates().groupby([DIV,PLZ])[TND].nunique().reset_index(name="Tiendas_totales")
     base = num.merge(tot, on=[DIV,PLZ], how="left")
+
     base["Cobertura %"] = (base["Tiendas_con_art"]/base["Tiendas_totales"]*100).clip(0,100)
 
-    pivot = base.pivot(index=DIV, columns=PLZ, values="Cobertura %").round(0)
-    return pivot
+    # Cobertura promedio por DIVISION
+    div = base.groupby(DIV)["Cobertura %"].mean().reset_index()
+    return div
 
 tabla_div = cobertura_por_division(df_venta_perdida_filtrada, TOTALES_PLAZA, umbral_inv=3)
 
