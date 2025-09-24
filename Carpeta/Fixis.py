@@ -246,7 +246,7 @@ def cobertura_tabla(df):
         "Coahuila (Saltillo)":85,"Coahuila (Torreón)":54,"Morelos":12,"México":390,
         "Nuevo León":751,"Puebla":22,"Quintana Roo":103,"Tamaulipas (Matamoros)":59,
         "Tamaulipas (Reynosa)":168,"Baja California (Tijuana)":86,"Baja California (Mexicali)":61,
-        "Baja California (Ensenada)":24,"Jalisco":181,"Yucatán":30,"Sonora (Hermosillo)":21,
+        "Baja California (Ensenada)":24,"Jalisco":181,"Yucatán":29,"Sonora (Hermosillo)":21,
     }
     ART = "ARTICULO" if "ARTICULO" in df.columns else "Artículo"
     PLZ = "PLAZA" if "PLAZA" in df.columns else "Plaza"
